@@ -12,7 +12,7 @@ using MyWebAPI.Data;
 namespace MyWebAPI.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20230916093645_Initial")]
+    [Migration("20230916113413_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -132,6 +132,11 @@ namespace MyWebAPI.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("HoTen")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");

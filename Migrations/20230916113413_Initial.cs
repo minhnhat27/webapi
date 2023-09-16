@@ -48,7 +48,8 @@ namespace MyWebAPI.Migrations
                 columns: table => new
                 {
                     MSCB = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    HoTen = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
+                    HoTen = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
                 },
                 constraints: table =>
                 {

@@ -4,7 +4,7 @@ using MyWebAPI.ViewModel;
 
 namespace MyWebAPI.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
         public UserService(IUserRepository userRepository)

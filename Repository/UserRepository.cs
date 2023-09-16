@@ -18,11 +18,12 @@ namespace MyWebAPI.Repository
         }
         public async Task<string> Login(Login login)
         {
-            var user = await _db.GiangDays.SingleOrDefaultAsync(e => e.MSCB == login.MSCB && e.Password == login.Password);
-            if (user != null)
-            {
+            //var user = await _db.GiangDays.SingleOrDefaultAsync(e => e.MSCB == login.MSCB && e.Password == login.Password);
+            //if (user != null)
+            //{
 
-            }
+            //}
+            return "";
         }
     }
 }

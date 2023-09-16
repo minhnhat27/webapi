@@ -1,17 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MyWebAPI.Models
+namespace MyWebAPI.ViewModel
 {
-    public class GiangVien
+    public class Login
     {
-        [Key]
         [MaxLength(10)]
         public string MSCB { get; set; }
-        [MaxLength(30)]
-        public string HoTen { get; set; }
         [Required]
         [MaxLength(30)]
         public string Password { get; set; }
-        public ICollection<GiangDay> GiangDays { get; } = new List<GiangDay>();
     }
 }

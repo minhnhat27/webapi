@@ -1,11 +1,12 @@
-﻿using MyWebAPI.Models;
-using MyWebAPI.ViewModel;
+﻿using MyWebAPI.ViewModel;
 
 namespace MyWebAPI.Repository
 {
     public interface IUserRepository
     {
-        public Task<GiangVien?> GetById(string id);
-        Task<string> Login(Login login);
+        public UserModel? GetById(string id);
+        public List<UserModel> GetAll();
+        public Task Update(UserModel user);
+        Task<TokenModel> Login(UserModel login);
     }
 }

@@ -11,7 +11,7 @@ namespace MyWebAPI.Services
         {
             _userRepository = userRepository;
         }
-        public async Task<string> Login(Login login)
+        public async Task<TokenModel> Login(UserModel login)
         {
             return await _userRepository.Login(login);
         }

@@ -2,7 +2,7 @@
 
 namespace MyWebAPI.ViewModel
 {
-    public class Login
+    public class UserModel
     {
         [MaxLength(10)]
         public string MSCB { get; set; }

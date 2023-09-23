@@ -1,15 +1,58 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace MyWebAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AspNetRoles",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUsers",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    HoTen = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    SoDienThoai = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Buois",
                 columns: table => new
@@ -41,19 +84,6 @@ namespace MyWebAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CPUs", x => x.Ten);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "GiangViens",
-                columns: table => new
-                {
-                    MSCB = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    HoTen = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GiangViens", x => x.MSCB);
                 });
 
             migrationBuilder.CreateTable(
@@ -100,7 +130,7 @@ namespace MyWebAPI.Migrations
                 {
                     IdPhanMem = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TenPhanMem = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true)
+                    TenPhanMem = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -127,6 +157,112 @@ namespace MyWebAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tuans", x => x.SoTuan);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetRoleClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserClaims_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserLogins",
+                columns: table => new
+                {
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserRoles",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUserTokens",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -182,24 +318,24 @@ namespace MyWebAPI.Migrations
                 columns: table => new
                 {
                     HK_NH = table.Column<string>(type: "nvarchar(15)", nullable: false),
-                    MSCB = table.Column<string>(type: "nvarchar(10)", nullable: false),
+                    GiangVienId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     STT = table.Column<int>(type: "int", nullable: false),
                     MaNhomHP = table.Column<string>(type: "nvarchar(15)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GiangDays", x => new { x.HK_NH, x.MSCB, x.STT, x.MaNhomHP });
+                    table.PrimaryKey("PK_GiangDays", x => new { x.HK_NH, x.GiangVienId, x.STT, x.MaNhomHP });
+                    table.ForeignKey(
+                        name: "FK_GiangDays_AspNetUsers_GiangVienId",
+                        column: x => x.GiangVienId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_GiangDays_BuoiThucHanhs_STT",
                         column: x => x.STT,
                         principalTable: "BuoiThucHanhs",
                         principalColumn: "STT",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_GiangDays_GiangViens_MSCB",
-                        column: x => x.MSCB,
-                        principalTable: "GiangViens",
-                        principalColumn: "MSCB",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_GiangDays_HocKyNamHocs_HK_NH",
@@ -290,7 +426,7 @@ namespace MyWebAPI.Migrations
                     TenBuoi = table.Column<string>(type: "nvarchar(10)", nullable: false),
                     TuanSoTuan = table.Column<int>(type: "int", nullable: true),
                     GiangDayHK_NH = table.Column<string>(type: "nvarchar(15)", nullable: true),
-                    GiangDayMSCB = table.Column<string>(type: "nvarchar(10)", nullable: true),
+                    GiangDayGiangVienId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     GiangDaySTT = table.Column<int>(type: "int", nullable: true),
                     GiangDayMaNhomHP = table.Column<string>(type: "nvarchar(15)", nullable: true),
                     GhiChu = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
@@ -305,10 +441,10 @@ namespace MyWebAPI.Migrations
                         principalColumn: "TenBuoi",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_LichThucHanhs_GiangDays_GiangDayHK_NH_GiangDayMSCB_GiangDaySTT_GiangDayMaNhomHP",
-                        columns: x => new { x.GiangDayHK_NH, x.GiangDayMSCB, x.GiangDaySTT, x.GiangDayMaNhomHP },
+                        name: "FK_LichThucHanhs_GiangDays_GiangDayHK_NH_GiangDayGiangVienId_GiangDaySTT_GiangDayMaNhomHP",
+                        columns: x => new { x.GiangDayHK_NH, x.GiangDayGiangVienId, x.GiangDaySTT, x.GiangDayMaNhomHP },
                         principalTable: "GiangDays",
-                        principalColumns: new[] { "HK_NH", "MSCB", "STT", "MaNhomHP" });
+                        principalColumns: new[] { "HK_NH", "GiangVienId", "STT", "MaNhomHP" });
                     table.ForeignKey(
                         name: "FK_LichThucHanhs_Phongs_SoPhong",
                         column: x => x.SoPhong,
@@ -321,6 +457,45 @@ namespace MyWebAPI.Migrations
                         principalTable: "Tuans",
                         principalColumn: "SoTuan");
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetRoleClaims_RoleId",
+                table: "AspNetRoleClaims",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserClaims_UserId",
+                table: "AspNetUserClaims",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserLogins_UserId",
+                table: "AspNetUserLogins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserRoles_RoleId",
+                table: "AspNetUserRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CaiDatPhanMems_IdPhanMem",
@@ -343,14 +518,14 @@ namespace MyWebAPI.Migrations
                 column: "RAMDungLuong");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GiangDays_GiangVienId",
+                table: "GiangDays",
+                column: "GiangVienId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GiangDays_MaNhomHP",
                 table: "GiangDays",
                 column: "MaNhomHP");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GiangDays_MSCB",
-                table: "GiangDays",
-                column: "MSCB");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GiangDays_STT",
@@ -363,9 +538,9 @@ namespace MyWebAPI.Migrations
                 column: "MaHP");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LichThucHanhs_GiangDayHK_NH_GiangDayMSCB_GiangDaySTT_GiangDayMaNhomHP",
+                name: "IX_LichThucHanhs_GiangDayHK_NH_GiangDayGiangVienId_GiangDaySTT_GiangDayMaNhomHP",
                 table: "LichThucHanhs",
-                columns: new[] { "GiangDayHK_NH", "GiangDayMSCB", "GiangDaySTT", "GiangDayMaNhomHP" });
+                columns: new[] { "GiangDayHK_NH", "GiangDayGiangVienId", "GiangDaySTT", "GiangDayMaNhomHP" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_LichThucHanhs_SoPhong",
@@ -397,6 +572,21 @@ namespace MyWebAPI.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
                 name: "CaiDatPhanMems");
 
             migrationBuilder.DropTable(
@@ -404,6 +594,9 @@ namespace MyWebAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "LichThucHanhs");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "PhanMems");
@@ -421,10 +614,10 @@ namespace MyWebAPI.Migrations
                 name: "Tuans");
 
             migrationBuilder.DropTable(
-                name: "BuoiThucHanhs");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "GiangViens");
+                name: "BuoiThucHanhs");
 
             migrationBuilder.DropTable(
                 name: "HocKyNamHocs");

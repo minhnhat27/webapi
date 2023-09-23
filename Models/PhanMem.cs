@@ -7,7 +7,7 @@ namespace MyWebAPI.Models
         [Key]
         public int IdPhanMem { get; set; }
         [MaxLength(30)]
-        public string? TenPhanMem { get; set; }
+        public string TenPhanMem { get; set; }
         public ICollection<CaiDatPhanMem> CaiDatPhanMems { get; } = new List<CaiDatPhanMem>();
 
     }

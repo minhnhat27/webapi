@@ -22,6 +22,112 @@ namespace MyWebAPI.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
             modelBuilder.Entity("MyWebAPI.Models.Buoi", b =>
                 {
                     b.Property<string>("TenBuoi")
@@ -102,8 +208,8 @@ namespace MyWebAPI.Migrations
                     b.Property<string>("HK_NH")
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<string>("MSCB")
-                        .HasColumnType("nvarchar(10)");
+                    b.Property<string>("GiangVienId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("STT")
                         .HasColumnType("int");
@@ -111,9 +217,9 @@ namespace MyWebAPI.Migrations
                     b.Property<string>("MaNhomHP")
                         .HasColumnType("nvarchar(15)");
 
-                    b.HasKey("HK_NH", "MSCB", "STT", "MaNhomHP");
+                    b.HasKey("HK_NH", "GiangVienId", "STT", "MaNhomHP");
 
-                    b.HasIndex("MSCB");
+                    b.HasIndex("GiangVienId");
 
                     b.HasIndex("MaNhomHP");
 
@@ -124,23 +230,75 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.GiangVien", b =>
                 {
-                    b.Property<string>("MSCB")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
 
                     b.Property<string>("HoTen")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
 
-                    b.HasKey("MSCB");
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
 
-                    b.ToTable("GiangViens");
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SoDienThoai")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("MyWebAPI.Models.HocKyNamHoc", b =>
@@ -215,11 +373,11 @@ namespace MyWebAPI.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("GiangDayGiangVienId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("GiangDayHK_NH")
                         .HasColumnType("nvarchar(15)");
-
-                    b.Property<string>("GiangDayMSCB")
-                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("GiangDayMaNhomHP")
                         .HasColumnType("nvarchar(15)");
@@ -238,7 +396,7 @@ namespace MyWebAPI.Migrations
 
                     b.HasIndex("TuanSoTuan");
 
-                    b.HasIndex("GiangDayHK_NH", "GiangDayMSCB", "GiangDaySTT", "GiangDayMaNhomHP");
+                    b.HasIndex("GiangDayHK_NH", "GiangDayGiangVienId", "GiangDaySTT", "GiangDayMaNhomHP");
 
                     b.ToTable("LichThucHanhs");
                 });
@@ -281,6 +439,7 @@ namespace MyWebAPI.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPhanMem"));
 
                     b.Property<string>("TenPhanMem")
+                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
@@ -317,6 +476,36 @@ namespace MyWebAPI.Migrations
                     b.ToTable("RAMs");
                 });
 
+            modelBuilder.Entity("MyWebAPI.Models.Role", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
             modelBuilder.Entity("MyWebAPI.Models.Tuan", b =>
                 {
                     b.Property<int>("SoTuan")
@@ -325,6 +514,57 @@ namespace MyWebAPI.Migrations
                     b.HasKey("SoTuan");
 
                     b.ToTable("Tuans");
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("MyWebAPI.Models.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("MyWebAPI.Models.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MyWebAPI.Models.CaiDatPhanMem", b =>
@@ -369,15 +609,15 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.GiangDay", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.HocKyNamHoc", "HocKyNamHoc")
+                    b.HasOne("MyWebAPI.Models.GiangVien", "GiangVien")
                         .WithMany("GiangDays")
-                        .HasForeignKey("HK_NH")
+                        .HasForeignKey("GiangVienId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.GiangVien", "GiangVien")
+                    b.HasOne("MyWebAPI.Models.HocKyNamHoc", "HocKyNamHoc")
                         .WithMany("GiangDays")
-                        .HasForeignKey("MSCB")
+                        .HasForeignKey("HK_NH")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -441,7 +681,7 @@ namespace MyWebAPI.Migrations
 
                     b.HasOne("MyWebAPI.Models.GiangDay", "GiangDay")
                         .WithMany("LichThucHanhs")
-                        .HasForeignKey("GiangDayHK_NH", "GiangDayMSCB", "GiangDaySTT", "GiangDayMaNhomHP");
+                        .HasForeignKey("GiangDayHK_NH", "GiangDayGiangVienId", "GiangDaySTT", "GiangDayMaNhomHP");
 
                     b.Navigation("Buoi");
 

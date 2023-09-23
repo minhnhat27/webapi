@@ -2,7 +2,7 @@
 
 namespace MyWebAPI.Models
 {
-    [PrimaryKey(nameof(SoPhong),nameof(MaHP))]
+    [PrimaryKey(nameof(SoPhong), nameof(MaHP))]
     public class HocPhanPhuHop
     {
         public int SoPhong { get; set; }

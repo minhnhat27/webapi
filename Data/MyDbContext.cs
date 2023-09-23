@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyWebAPI.Models;
 
 namespace MyWebAPI.Data
 {
-    public class MyDbContext : DbContext
+    public class MyDbContext : IdentityDbContext<GiangVien, Role, string>
     {
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { }
 
@@ -16,7 +17,7 @@ namespace MyWebAPI.Data
         public DbSet<HocPhan> HocPhans { get; set; }
         public DbSet<NhomHocPhan> NhomHocPhans { get; set; }
         public DbSet<BuoiThucHanh> BuoiThucHanhs { get; set; }
-        public DbSet<GiangVien> GiangViens { get; set; }
+        //public DbSet<GiangVien> GiangViens { get; set; }
         public DbSet<HocKyNamHoc> HocKyNamHocs { get; set; }
         public DbSet<GiangDay> GiangDays { get; set; }
         public DbSet<Tuan> Tuans { get; set; }
@@ -24,6 +25,5 @@ namespace MyWebAPI.Data
         public DbSet<Phong> Phongs { get; set; }
         public DbSet<LichThucHanh> LichThucHanhs { get; set; }
         public DbSet<HocPhanPhuHop> HocPhanPhuHops { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

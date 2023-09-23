@@ -2,12 +2,12 @@
 
 namespace MyWebAPI.Models
 {
-    [PrimaryKey(nameof(HK_NH),nameof(MSCB),nameof(STT),nameof(MaNhomHP))]
+    [PrimaryKey(nameof(HK_NH), nameof(GiangVienId), nameof(STT), nameof(MaNhomHP))]
     public class GiangDay
     {
         public string HK_NH { get; set; }
         public HocKyNamHoc? HocKyNamHoc { get; set; }
-        public string MSCB { get; set; }
+        public string GiangVienId { get; set; }
         public GiangVien GiangVien { get; set; }
         public int STT { get; set; }
         public BuoiThucHanh BuoiThucHanh { get; set; }

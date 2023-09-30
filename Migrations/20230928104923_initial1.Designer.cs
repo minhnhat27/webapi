@@ -12,8 +12,8 @@ using MyWebAPI.Data;
 namespace MyWebAPI.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20230920085717_initial")]
-    partial class initial
+    [Migration("20230928104923_initial1")]
+    partial class initial1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,13 +165,13 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.CaiDatPhanMem", b =>
                 {
-                    b.Property<int>("IdCauHinh")
+                    b.Property<int>("SoPhong")
                         .HasColumnType("int");
 
                     b.Property<int>("IdPhanMem")
                         .HasColumnType("int");
 
-                    b.HasKey("IdCauHinh", "IdPhanMem");
+                    b.HasKey("SoPhong", "IdPhanMem");
 
                     b.HasIndex("IdPhanMem");
 
@@ -214,19 +214,19 @@ namespace MyWebAPI.Migrations
                     b.Property<string>("GiangVienId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("STT")
+                    b.Property<int>("BuoiThucHanhSTT")
                         .HasColumnType("int");
 
                     b.Property<string>("MaNhomHP")
                         .HasColumnType("nvarchar(15)");
 
-                    b.HasKey("HK_NH", "GiangVienId", "STT", "MaNhomHP");
+                    b.HasKey("HK_NH", "GiangVienId", "BuoiThucHanhSTT", "MaNhomHP");
+
+                    b.HasIndex("BuoiThucHanhSTT");
 
                     b.HasIndex("GiangVienId");
 
                     b.HasIndex("MaNhomHP");
-
-                    b.HasIndex("STT");
 
                     b.ToTable("GiangDays");
                 });
@@ -313,10 +313,9 @@ namespace MyWebAPI.Migrations
                     b.Property<bool>("HocKyHienTai")
                         .HasColumnType("bit");
 
-                    b.Property<string>("NgayBatDau")
-                        .IsRequired()
+                    b.Property<DateTime>("NgayBatDau")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("HK_NH");
 
@@ -362,44 +361,45 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.LichThucHanh", b =>
                 {
-                    b.Property<string>("NgayThucHanh")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("SoPhong")
-                        .HasColumnType("int");
-
                     b.Property<string>("TenBuoi")
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("HK_NH")
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("GiangVienId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MaNhomHP")
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<int>("BuoiThucHanhSTT")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("CaNgay")
+                        .HasColumnType("bit");
 
                     b.Property<string>("GhiChu")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("GiangDayGiangVienId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<DateTime>("NgayThucHanh")
+                        .HasMaxLength(20)
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("GiangDayHK_NH")
-                        .HasColumnType("nvarchar(15)");
-
-                    b.Property<string>("GiangDayMaNhomHP")
-                        .HasColumnType("nvarchar(15)");
-
-                    b.Property<int?>("GiangDaySTT")
+                    b.Property<int>("PhongSoPhong")
                         .HasColumnType("int");
 
-                    b.Property<int?>("TuanSoTuan")
+                    b.Property<int>("TuanSoTuan")
                         .HasColumnType("int");
 
-                    b.HasKey("NgayThucHanh", "SoPhong", "TenBuoi");
+                    b.HasKey("TenBuoi", "HK_NH", "GiangVienId", "MaNhomHP", "BuoiThucHanhSTT");
 
-                    b.HasIndex("SoPhong");
-
-                    b.HasIndex("TenBuoi");
+                    b.HasIndex("PhongSoPhong");
 
                     b.HasIndex("TuanSoTuan");
 
-                    b.HasIndex("GiangDayHK_NH", "GiangDayGiangVienId", "GiangDaySTT", "GiangDayMaNhomHP");
+                    b.HasIndex("HK_NH", "GiangVienId", "BuoiThucHanhSTT", "MaNhomHP");
 
                     b.ToTable("LichThucHanhs");
                 });
@@ -572,21 +572,21 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.CaiDatPhanMem", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.CauHinh", "CauHinh")
-                        .WithMany("CaiDatPhanMems")
-                        .HasForeignKey("IdCauHinh")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MyWebAPI.Models.PhanMem", "PhanMem")
                         .WithMany("CaiDatPhanMems")
                         .HasForeignKey("IdPhanMem")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("CauHinh");
+                    b.HasOne("MyWebAPI.Models.Phong", "Phong")
+                        .WithMany("CaiDatPhanMems")
+                        .HasForeignKey("SoPhong")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("PhanMem");
+
+                    b.Navigation("Phong");
                 });
 
             modelBuilder.Entity("MyWebAPI.Models.CauHinh", b =>
@@ -612,6 +612,12 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.GiangDay", b =>
                 {
+                    b.HasOne("MyWebAPI.Models.BuoiThucHanh", "BuoiThucHanh")
+                        .WithMany("GiangDays")
+                        .HasForeignKey("BuoiThucHanhSTT")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MyWebAPI.Models.GiangVien", "GiangVien")
                         .WithMany("GiangDays")
                         .HasForeignKey("GiangVienId")
@@ -627,12 +633,6 @@ namespace MyWebAPI.Migrations
                     b.HasOne("MyWebAPI.Models.NhomHocPhan", "NhomHocPhan")
                         .WithMany("GiangDays")
                         .HasForeignKey("MaNhomHP")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MyWebAPI.Models.BuoiThucHanh", "BuoiThucHanh")
-                        .WithMany("GiangDays")
-                        .HasForeignKey("STT")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -668,7 +668,7 @@ namespace MyWebAPI.Migrations
                 {
                     b.HasOne("MyWebAPI.Models.Phong", "Phong")
                         .WithMany("LichThucHanhs")
-                        .HasForeignKey("SoPhong")
+                        .HasForeignKey("PhongSoPhong")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -680,11 +680,15 @@ namespace MyWebAPI.Migrations
 
                     b.HasOne("MyWebAPI.Models.Tuan", "Tuan")
                         .WithMany("LichThucHanhs")
-                        .HasForeignKey("TuanSoTuan");
+                        .HasForeignKey("TuanSoTuan")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MyWebAPI.Models.GiangDay", "GiangDay")
                         .WithMany("LichThucHanhs")
-                        .HasForeignKey("GiangDayHK_NH", "GiangDayGiangVienId", "GiangDaySTT", "GiangDayMaNhomHP");
+                        .HasForeignKey("HK_NH", "GiangVienId", "BuoiThucHanhSTT", "MaNhomHP")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Buoi");
 
@@ -730,8 +734,6 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.CauHinh", b =>
                 {
-                    b.Navigation("CaiDatPhanMems");
-
                     b.Navigation("Phongs");
                 });
 
@@ -774,6 +776,8 @@ namespace MyWebAPI.Migrations
 
             modelBuilder.Entity("MyWebAPI.Models.Phong", b =>
                 {
+                    b.Navigation("CaiDatPhanMems");
+
                     b.Navigation("HocPhanPhuHops");
 
                     b.Navigation("LichThucHanhs");

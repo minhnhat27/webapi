@@ -76,13 +76,13 @@ namespace MyWebAPI.Controllers
             }
         }
 
-        [Authorize]
-        [HttpGet("SignOut")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> Logout()
-        {   
-            await _accountRepository.LogoutAsync();
-            return Ok();
-        }
+        //[Authorize]
+        //[HttpGet("SignOut")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<IActionResult> Logout()
+        //{   
+        //    await _accountRepository.LogoutAsync();
+        //    return Ok();
+        //}
     }
 }

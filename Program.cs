@@ -19,12 +19,13 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyWebAPI", opt =>
     {
-        //opt.WithOrigins("https://localhost:44304");
-        opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        opt.WithOrigins("https://localhost:44362").AllowAnyMethod().AllowAnyHeader();
+        //opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
 });
 
@@ -64,8 +65,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors();
-
+app.UseCors("MyWebAPI");
 app.UseAuthentication();
 app.UseAuthorization();
 

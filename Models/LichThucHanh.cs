@@ -5,18 +5,25 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyWebAPI.Models
 {
-    [PrimaryKey(nameof(NgayThucHanh), nameof(SoPhong), nameof(TenBuoi))]
+    [PrimaryKey(nameof(TenBuoi), nameof(HK_NH), nameof(GiangVienId), nameof(MaNhomHP), nameof(BuoiThucHanhSTT))]
     public class LichThucHanh
     {
-        [Key]
         [MaxLength(20)]
-        public string NgayThucHanh { set; get; }
-        public int SoPhong { get; set; }
+        public DateTime NgayThucHanh { set; get; }
+        public int? PhongSoPhong { set; get; }
         public Phong? Phong { get; set; }
+        public int TuanSoTuan { set; get; }
+        public Tuan? Tuan { get; set; }
+
         public string TenBuoi { get; set; }
         public Buoi? Buoi { get; set; }
-        public Tuan? Tuan { get; set; }
-        public GiangDay? GiangDay { get; set; }
+
+        public string HK_NH { get; set; }
+        public string GiangVienId { get; set; }
+        public int BuoiThucHanhSTT { get; set; }
+        public string MaNhomHP { get; set; }
+        public GiangDay GiangDay { get; set; }
+        
         [MaxLength(100)]
         public string? GhiChu { get; set; }
     }

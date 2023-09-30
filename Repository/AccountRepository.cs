@@ -58,10 +58,10 @@ namespace MyWebAPI.Repository
             };
         }
 
-        public async Task LogoutAsync()
-        {
-            await _signinManager.SignOutAsync();
-        }
+        //public async Task LogoutAsync()
+        //{
+        //    await _signinManager.SignOutAsync();
+        //}
 
     }
 }

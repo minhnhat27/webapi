@@ -2,11 +2,11 @@
 
 namespace MyWebAPI.Models
 {
-    [PrimaryKey(nameof(IdCauHinh), nameof(IdPhanMem))]
+    [PrimaryKey(nameof(SoPhong), nameof(IdPhanMem))]
     public class CaiDatPhanMem
     {
-        public int IdCauHinh { get; set; }
-        public CauHinh? CauHinh { get; set; }
+        public int SoPhong { get; set; }
+        public Phong? Phong { get; set; }
         public int IdPhanMem { get; set; }
         public PhanMem? PhanMem { get; set; }
     }

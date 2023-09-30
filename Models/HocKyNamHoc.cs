@@ -9,7 +9,7 @@ namespace MyWebAPI.Models
         public string HK_NH { get; set; }
         [Required]
         [MaxLength(20)]
-        public string NgayBatDau { get; set; }
+        public DateTime NgayBatDau { get; set; }
         [Required]
         public bool HocKyHienTai { get; set; } = false;
 

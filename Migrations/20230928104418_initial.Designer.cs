@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyWebAPI.Data;
 
@@ -11,9 +12,11 @@ using MyWebAPI.Data;
 namespace MyWebAPI.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230928104418_initial")]
+    partial class initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -217,12 +220,6 @@ namespace MyWebAPI.Migrations
                     b.Property<string>("MaNhomHP")
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<bool>("caNgay")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("onSchedule")
-                        .HasColumnType("bit");
-
                     b.HasKey("HK_NH", "GiangVienId", "BuoiThucHanhSTT", "MaNhomHP");
 
                     b.HasIndex("BuoiThucHanhSTT");
@@ -316,9 +313,10 @@ namespace MyWebAPI.Migrations
                     b.Property<bool>("HocKyHienTai")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("NgayBatDau")
+                    b.Property<string>("NgayBatDau")
+                        .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("datetime2");
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("HK_NH");
 
@@ -379,6 +377,9 @@ namespace MyWebAPI.Migrations
                     b.Property<int>("BuoiThucHanhSTT")
                         .HasColumnType("int");
 
+                    b.Property<bool>("CaNgay")
+                        .HasColumnType("bit");
+
                     b.Property<string>("GhiChu")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -387,7 +388,7 @@ namespace MyWebAPI.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("PhongSoPhong")
+                    b.Property<int>("PhongSoPhong")
                         .HasColumnType("int");
 
                     b.Property<int>("TuanSoTuan")
@@ -668,7 +669,9 @@ namespace MyWebAPI.Migrations
                 {
                     b.HasOne("MyWebAPI.Models.Phong", "Phong")
                         .WithMany("LichThucHanhs")
-                        .HasForeignKey("PhongSoPhong");
+                        .HasForeignKey("PhongSoPhong")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MyWebAPI.Models.Buoi", "Buoi")
                         .WithMany("LichThucHanhs")

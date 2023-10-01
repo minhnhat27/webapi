@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using MyWebAPI.Data;
 using MyWebAPI.Data.ViewModels;
 using MyWebAPI.Models;
@@ -69,6 +70,39 @@ namespace MyWebAPI.Controllers
             if(!result.success)
             {
                 return Unauthorized(result);
+            }
+            else
+            {
+                return Ok(result);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("ExternalLogin")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ExternalLogin([FromBody]string email)
+        {
+            var result = await _accountRepository.ExternalLogin(email);
+            if (!result.success)
+            {
+                return BadRequest(result);
+            }
+            else
+            {
+                return Ok(result);
+            }
+        }
+
+        [HttpPost("getIdfromEmail")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> getIdfromEmail([FromBody]string email)
+        {
+            var result = await _accountRepository.getIdfromEmail(email);
+            if (!result.success)
+            {
+                return NotFound(result);
             }
             else
             {

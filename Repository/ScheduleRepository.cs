@@ -26,7 +26,8 @@ namespace MyWebAPI.Repository
             var user = await _userManager.GetUserAsync(_signinManager.Context.User);
             var week = _Dbcontext.Tuans.Select(e => e.SoTuan);
             var currentSemester = _Dbcontext.HocKyNamHocs.Single(e => e.HocKyHienTai == true);
-            
+            var dayoff = _Dbcontext.NgayNghis.Select(e => e.ngayNghi).ToList();
+
             var teaching = _Dbcontext.GiangDays
                 .Where(e => e.GiangVienId == user!.Id && e.HK_NH == currentSemester.HK_NH)
                 .Select(e => new GiangDayVM
@@ -36,20 +37,6 @@ namespace MyWebAPI.Repository
                     onSchedule = e.onSchedule
                 }).OrderBy(e => e.manhomhp)
                 .ToList();
-
-            //var thuchanh = from lichs in _Dbcontext.LichThucHanhs
-            //         join giangdays in _Dbcontext.GiangDays
-            //         on new { lichs.GiangVienId, lichs.HK_NH, lichs.MaNhomHP, lichs.BuoiThucHanhSTT }
-            //         equals new { giangdays.GiangVienId, giangdays.HK_NH, giangdays.MaNhomHP, giangdays.BuoiThucHanhSTT }
-            //         select new
-            //         {
-            //             ngaythuchanh = lichs.NgayThucHanh,
-            //             buoi = lichs.TenBuoi,
-            //             sotuan = lichs.TuanSoTuan,
-            //             sttbuoithuchanh = lichs.BuoiThucHanhSTT,
-            //             manhomhp = lichs.MaNhomHP,
-            //             onSchedule = giangdays.onSchedule
-            //         };
 
             var thuchanh = _Dbcontext.LichThucHanhs.Where(
                 e => e.GiangVienId == user!.Id
@@ -71,7 +58,8 @@ namespace MyWebAPI.Repository
                 giangDays = teaching!,
                 ngaybatdauhk = currentSemester.NgayBatDau,
                 sotuan = week.Count(),
-                lichThucHanhs = thuchanh
+                lichThucHanhs = thuchanh,
+                ngaynghis = dayoff
             };
 
             return practice;
@@ -167,30 +155,7 @@ namespace MyWebAPI.Repository
             
         }
 
-        //[Authorize]
-        //public async Task<ApiResponse> updateSchedule(LichThucHanhVM lichThucHanh, LichThucHanh updateLichThucHanh)
-        //{
-        //    try
-        //    {
-        //        updateLichThucHanh.NgayThucHanh = lichThucHanh.ngaythuchanh;
-        //        //updateLichThucHanh.SoPhong = lichThucHanh.sophong;
-        //        updateLichThucHanh.TenBuoi = lichThucHanh.buoi;
-        //        updateLichThucHanh.TuanSoTuan = lichThucHanh.sotuan;
-        //        await _Dbcontext.SaveChangesAsync();
-        //        return new ApiResponse
-        //        {
-        //            success = true,
-        //            message = "Update Success"
-        //        };
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        return new ApiResponse
-        //        {
-        //            success = false,
-        //            message = "Update Fail" + ex.Message + ex.InnerException
-        //        };
-        //    }
-        //}
+
+
     }
 }

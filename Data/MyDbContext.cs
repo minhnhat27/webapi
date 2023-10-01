@@ -25,5 +25,6 @@ namespace MyWebAPI.Data
         public DbSet<Phong> Phongs { get; set; }
         public DbSet<LichThucHanh> LichThucHanhs { get; set; }
         public DbSet<HocPhanPhuHop> HocPhanPhuHops { get; set; }
+        public DbSet<NgayNghi> NgayNghis { get; set; }
     }
 }

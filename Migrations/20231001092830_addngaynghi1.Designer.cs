@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyWebAPI.Data;
 
@@ -11,9 +12,11 @@ using MyWebAPI.Data;
 namespace MyWebAPI.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231001092830_addngaynghi1")]
+    partial class addngaynghi1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -402,16 +405,6 @@ namespace MyWebAPI.Migrations
                     b.HasIndex("HK_NH", "GiangVienId", "BuoiThucHanhSTT", "MaNhomHP");
 
                     b.ToTable("LichThucHanhs");
-                });
-
-            modelBuilder.Entity("MyWebAPI.Models.NgayNghi", b =>
-                {
-                    b.Property<DateTime>("ngayNghi")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("ngayNghi");
-
-                    b.ToTable("NgayNghis");
                 });
 
             modelBuilder.Entity("MyWebAPI.Models.NhomHocPhan", b =>

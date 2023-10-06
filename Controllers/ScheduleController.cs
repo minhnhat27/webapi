@@ -17,10 +17,10 @@ namespace MyWebAPI.Controllers
             _scheduleRepository = scheduleRepository;
         }
 
-        [HttpGet("GetTeachingofLecturer")]
+        [HttpPost("GetTeachingofLecturer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetTeachingofLecturer() {
-            var list = await _scheduleRepository.getAllCourseGroupofLecturer();            
+        public async Task<IActionResult> GetTeachingofLecturer([FromBody] string MSCB) {
+            var list = await _scheduleRepository.getAllCourseGroupofLecturer(MSCB);
             return Ok(list);
         }
 
@@ -56,20 +56,12 @@ namespace MyWebAPI.Controllers
             }
         }
 
-        //[HttpPut("updateSchedule")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> updateSchedule([FromBody]LichThucHanhVM lichThucHanh)
-        //{
-        //    var result = await _scheduleRepository.updateSchedule(lichThucHanh);
-        //    if (!result.success)
-        //    {
-        //        return BadRequest(result);
-        //    }
-        //    else
-        //    {
-        //        return Ok(result);
-        //    }
-        //}
+        [HttpPost("xepphong")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult xepphong([FromBody]LichThucHanhVM lichThucHanh)
+        {
+            var result = _scheduleRepository.roomArrange(lichThucHanh);
+            return Ok(result);
+        }
     }
 }

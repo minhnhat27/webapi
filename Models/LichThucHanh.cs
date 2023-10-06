@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyWebAPI.Models
 {
-    [PrimaryKey(nameof(TenBuoi), nameof(HK_NH), nameof(GiangVienId), nameof(MaNhomHP), nameof(BuoiThucHanhSTT))]
+    [PrimaryKey(nameof(TenBuoi), nameof(HK_NH), nameof(GiangVienId), nameof(MaNhomHP), nameof(BuoiThucHanhSTT), nameof(PhongSoPhong))]
     public class LichThucHanh
     {
         [MaxLength(20)]

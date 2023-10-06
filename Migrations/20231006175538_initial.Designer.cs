@@ -12,8 +12,8 @@ using MyWebAPI.Data;
 namespace MyWebAPI.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20231001092830_addngaynghi1")]
-    partial class addngaynghi1
+    [Migration("20231006175538_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -382,6 +382,9 @@ namespace MyWebAPI.Migrations
                     b.Property<int>("BuoiThucHanhSTT")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PhongSoPhong")
+                        .HasColumnType("int");
+
                     b.Property<string>("GhiChu")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -390,13 +393,10 @@ namespace MyWebAPI.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("PhongSoPhong")
-                        .HasColumnType("int");
-
                     b.Property<int>("TuanSoTuan")
                         .HasColumnType("int");
 
-                    b.HasKey("TenBuoi", "HK_NH", "GiangVienId", "MaNhomHP", "BuoiThucHanhSTT");
+                    b.HasKey("TenBuoi", "HK_NH", "GiangVienId", "MaNhomHP", "BuoiThucHanhSTT", "PhongSoPhong");
 
                     b.HasIndex("PhongSoPhong");
 
@@ -407,6 +407,16 @@ namespace MyWebAPI.Migrations
                     b.ToTable("LichThucHanhs");
                 });
 
+            modelBuilder.Entity("MyWebAPI.Models.NgayNghi", b =>
+                {
+                    b.Property<DateTime>("ngayNghi")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ngayNghi");
+
+                    b.ToTable("NgayNghis");
+                });
+
             modelBuilder.Entity("MyWebAPI.Models.NhomHocPhan", b =>
                 {
                     b.Property<string>("MaNhomHP")
@@ -414,6 +424,7 @@ namespace MyWebAPI.Migrations
                         .HasColumnType("nvarchar(15)");
 
                     b.Property<string>("HocPhanMaHP")
+                        .IsRequired()
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("SoLuongSV")
@@ -671,7 +682,9 @@ namespace MyWebAPI.Migrations
                 {
                     b.HasOne("MyWebAPI.Models.Phong", "Phong")
                         .WithMany("LichThucHanhs")
-                        .HasForeignKey("PhongSoPhong");
+                        .HasForeignKey("PhongSoPhong")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MyWebAPI.Models.Buoi", "Buoi")
                         .WithMany("LichThucHanhs")
@@ -704,7 +717,9 @@ namespace MyWebAPI.Migrations
                 {
                     b.HasOne("MyWebAPI.Models.HocPhan", "HocPhan")
                         .WithMany("NhomHocPhans")
-                        .HasForeignKey("HocPhanMaHP");
+                        .HasForeignKey("HocPhanMaHP")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("HocPhan");
                 });

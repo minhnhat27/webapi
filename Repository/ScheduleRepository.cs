@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MyWebAPI.Data;
 using MyWebAPI.Data.ViewModels;
 using MyWebAPI.Data.ViewModels.Schedule;
@@ -13,7 +15,9 @@ namespace MyWebAPI.Repository
         private readonly UserManager<GiangVien> _userManager;
         private readonly SignInManager<GiangVien> _signinManager;
 
-        public ScheduleRepository(MyDbContext context, UserManager<GiangVien> userManager, SignInManager<GiangVien> signInManager)
+        public ScheduleRepository(MyDbContext context, 
+            UserManager<GiangVien> userManager, 
+            SignInManager<GiangVien> signInManager)
         {
             _Dbcontext = context;
             _userManager = userManager;
@@ -21,15 +25,14 @@ namespace MyWebAPI.Repository
         }
 
         [Authorize]
-        public async Task<LichGiangDayVM> getAllCourseGroupofLecturer()
+        public async Task<LichGiangDayVM> getAllCourseGroupofLecturer(string MSCB)
         {
-            var user = await _userManager.GetUserAsync(_signinManager.Context.User);
             var week = _Dbcontext.Tuans.Select(e => e.SoTuan);
-            var currentSemester = _Dbcontext.HocKyNamHocs.Single(e => e.HocKyHienTai == true);
+            var currentSemester = await _Dbcontext.HocKyNamHocs.SingleAsync(e => e.HocKyHienTai == true);
             var dayoff = _Dbcontext.NgayNghis.Select(e => e.ngayNghi).ToList();
 
             var teaching = _Dbcontext.GiangDays
-                .Where(e => e.GiangVienId == user!.Id && e.HK_NH == currentSemester.HK_NH)
+                .Where(e => e.GiangVienId == MSCB && e.HK_NH == currentSemester.HK_NH)
                 .Select(e => new GiangDayVM
                 {
                     manhomhp = e.MaNhomHP!,
@@ -39,21 +42,27 @@ namespace MyWebAPI.Repository
                 .ToList();
 
             var thuchanh = _Dbcontext.LichThucHanhs.Where(
-                e => e.GiangVienId == user!.Id
-                && e.HK_NH == currentSemester.HK_NH
-            ).Select(e => new LichThucHanhVM
-            {
-                ngaythuchanh = e.NgayThucHanh,
-                buoi = e.TenBuoi,
-                sotuan = e.TuanSoTuan,
-                sttbuoithuchanh = e.BuoiThucHanhSTT,
-                manhomhp = e.MaNhomHP,
-                onSchedule = e.GiangDay.onSchedule
-            }).ToList();
+                e => e.GiangVienId == MSCB
+                && e.HK_NH == currentSemester.HK_NH)
+                .GroupBy(e => new {
+                    e.GiangVienId,
+                    e.HK_NH,
+                    e.BuoiThucHanhSTT,
+                    e.MaNhomHP
+                })
+                .Select(e => new LichThucHanhVM
+                {
+                    ngaythuchanh = e.First().NgayThucHanh,
+                    buoi = e.First().TenBuoi,
+                    sotuan = e.First().TuanSoTuan,
+                    sttbuoithuchanh = e.First().BuoiThucHanhSTT,
+                    manhomhp = e.First().MaNhomHP,
+                    onSchedule = e.First().GiangDay.onSchedule
+                }).ToList();
 
             var practice = new LichGiangDayVM
             {
-                mscb = user!.Id,
+                mscb = MSCB,
                 hknh = currentSemester.HK_NH,
                 giangDays = teaching!,
                 ngaybatdauhk = currentSemester.NgayBatDau,
@@ -65,15 +74,147 @@ namespace MyWebAPI.Repository
             return practice;
         }
 
+        public List<int> roomArrange(LichThucHanhVM lichThucHanh)
+        {
+            try
+            {
+                var maHP = _Dbcontext.NhomHocPhans.Single(e => e.MaNhomHP == lichThucHanh.manhomhp).HocPhanMaHP;
+                var soluongSV = _Dbcontext.NhomHocPhans.Single(e => e.MaNhomHP == lichThucHanh.manhomhp).SoLuongSV;
+                var hocphanphuhop = _Dbcontext.HocPhanPhuHops.Where(e => e.MaHP == maHP).Select(e => new {e.MaHP, e.SoPhong, e.Phong.SoLuongMayTinh}).ToList();
+                var LichThucHanh = _Dbcontext.LichThucHanhs.Where(
+                    e => e.TenBuoi == lichThucHanh.buoi 
+                    && e.TuanSoTuan == lichThucHanh.sotuan
+                    && e.GiangDay.onSchedule == true).Select(e => e.PhongSoPhong).ToList();
+
+                int room = 0;
+                int room1 = 0;
+                int room2 = 0;
+                bool isRoom = false;
+                
+                if(hocphanphuhop != null)
+                {
+                    foreach (var p in hocphanphuhop)
+                    {
+                        if (LichThucHanh.Contains(p.SoPhong))
+                        {
+                            isRoom = false;
+                            continue;
+                        }
+                        else
+                        {
+                            if (p.SoLuongMayTinh >= soluongSV)
+                            {
+                                room = p.SoPhong;
+                                isRoom = true;
+                                break;
+                            }
+                            else
+                            {
+                                room = p.SoPhong;
+                                if (room1 == 0)
+                                {
+                                    room1 = room;
+                                    continue;
+                                }
+                                if (room2 == 0 && room1 != 0)
+                                {
+                                    room2 = room;
+                                    isRoom = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!isRoom)
+                {
+                    var phong = _Dbcontext.Phongs.Select(e => new { e.SoPhong, e.SoLuongMayTinh }).ToList();
+                    foreach(var p in phong)
+                    {
+                        if (LichThucHanh.Contains(p.SoPhong))
+                        {
+                            isRoom = false;
+                            continue;
+                        }
+                        else
+                        {
+                            if (p.SoLuongMayTinh >= soluongSV)
+                            {
+                                room = p.SoPhong;
+                                isRoom = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!isRoom)
+                    {
+                        foreach (var p in phong)
+                        {
+                            if (LichThucHanh.Contains(p.SoPhong))
+                            {
+                                isRoom = false;
+                                continue;
+                            }
+                            else
+                            {
+                                if (p.SoLuongMayTinh >= soluongSV)
+                                {
+                                    room = p.SoPhong;
+                                    isRoom = true;
+                                    break;
+                                }
+                                else
+                                {
+                                    room = p.SoPhong;
+                                    if (room1 == 0)
+                                    {
+                                        room1 = room;
+                                        continue;
+                                    }
+                                    if (room2 == 0 && room1 != 0)
+                                    {
+                                        room2 = room;
+                                        isRoom = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+                if(room1 != 0 && room2 != 0)
+                {
+                    return new List<int> { room1, room2 };
+                }
+                else
+                {
+                    return new List<int> { room , room };
+                }
+                
+            }
+            catch
+            {
+                return new List<int> { 999, 999 };
+            }
+        }
+
         [Authorize]
         public async Task<ApiResponse> saveSchedule(LichThucHanhVM lichThucHanh)
         {
-            var removeModel = _Dbcontext.LichThucHanhs.SingleOrDefault(
+            var removeModel = _Dbcontext.LichThucHanhs.Where(
                     e => e.GiangVienId == lichThucHanh.mscb
                     && e.HK_NH == lichThucHanh.hknk
                     && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
                     && e.MaNhomHP == lichThucHanh.manhomhp);
 
+            var updateGiangDay = _Dbcontext.GiangDays.SingleOrDefault(
+                   e => e.GiangVienId == lichThucHanh.mscb
+                   && e.HK_NH == lichThucHanh.hknk
+                   && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
+                   && e.MaNhomHP == lichThucHanh.manhomhp);
+            
+            var room = roomArrange(lichThucHanh);
             var model = new LichThucHanh
             {
                 NgayThucHanh = lichThucHanh.ngaythuchanh,
@@ -82,21 +223,41 @@ namespace MyWebAPI.Repository
                 HK_NH = lichThucHanh.hknk,
                 GiangVienId = lichThucHanh.mscb,
                 BuoiThucHanhSTT = lichThucHanh.sttbuoithuchanh,
-                MaNhomHP = lichThucHanh.manhomhp
+                MaNhomHP = lichThucHanh.manhomhp,
+                PhongSoPhong = room[0]
             };
 
-            var updateGiangDay = _Dbcontext.GiangDays.SingleOrDefault(
-                   e => e.GiangVienId == lichThucHanh.mscb
-                   && e.HK_NH == lichThucHanh.hknk
-                   && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
-                   && e.MaNhomHP == lichThucHanh.manhomhp);
-
-            if (removeModel != null )
+            if (!removeModel.IsNullOrEmpty())
             {
-                _Dbcontext.LichThucHanhs.Remove(removeModel);
-                await _Dbcontext.LichThucHanhs.AddAsync(model);
-                updateGiangDay!.onSchedule = true;
-                await _Dbcontext.SaveChangesAsync();
+                foreach(var r in removeModel)
+                {
+                    _Dbcontext.LichThucHanhs.Remove(r);
+                }
+                if (room[0] == room[1])
+                {
+                    await _Dbcontext.LichThucHanhs.AddAsync(model);
+                    updateGiangDay!.onSchedule = true;
+                    await _Dbcontext.SaveChangesAsync();
+                }
+                else
+                {
+                    var model1 = new LichThucHanh
+                    {
+                        NgayThucHanh = lichThucHanh.ngaythuchanh,
+                        TenBuoi = lichThucHanh.buoi,
+                        TuanSoTuan = lichThucHanh.sotuan,
+                        HK_NH = lichThucHanh.hknk,
+                        GiangVienId = lichThucHanh.mscb,
+                        BuoiThucHanhSTT = lichThucHanh.sttbuoithuchanh,
+                        MaNhomHP = lichThucHanh.manhomhp,
+                        PhongSoPhong = room[1]
+                    };
+                    await _Dbcontext.LichThucHanhs.AddAsync(model);
+                    await _Dbcontext.LichThucHanhs.AddAsync(model1);
+                    updateGiangDay!.onSchedule = true;
+                    await _Dbcontext.SaveChangesAsync();
+                }
+
                 return new ApiResponse
                 {
                     success = true,
@@ -106,9 +267,30 @@ namespace MyWebAPI.Repository
 
             try
             {
-                await _Dbcontext.LichThucHanhs.AddAsync(model);
-                updateGiangDay!.onSchedule = true;
-                await _Dbcontext.SaveChangesAsync();
+                if (room[0] == room[1])
+                {
+                    await _Dbcontext.LichThucHanhs.AddAsync(model);
+                    updateGiangDay!.onSchedule = true;
+                    await _Dbcontext.SaveChangesAsync();
+                }
+                else
+                {
+                    var model1 = new LichThucHanh
+                    {
+                        NgayThucHanh = lichThucHanh.ngaythuchanh,
+                        TenBuoi = lichThucHanh.buoi,
+                        TuanSoTuan = lichThucHanh.sotuan,
+                        HK_NH = lichThucHanh.hknk,
+                        GiangVienId = lichThucHanh.mscb,
+                        BuoiThucHanhSTT = lichThucHanh.sttbuoithuchanh,
+                        MaNhomHP = lichThucHanh.manhomhp,
+                        PhongSoPhong = room[1]
+                    };
+                    await _Dbcontext.LichThucHanhs.AddAsync(model);
+                    await _Dbcontext.LichThucHanhs.AddAsync(model1);
+                    updateGiangDay!.onSchedule = true;
+                    await _Dbcontext.SaveChangesAsync();
+                }
                 return new ApiResponse
                 {
                     success = true,
@@ -128,15 +310,18 @@ namespace MyWebAPI.Repository
         [Authorize]
         public async Task<ApiResponse> updateOnSchedule(LichThucHanhVM lichThucHanh)
         {
-            var updateGiangDay = _Dbcontext.GiangDays.SingleOrDefault(
+            var updateGiangDay = _Dbcontext.GiangDays.Where(
                     e => e.GiangVienId == lichThucHanh.mscb
                     && e.HK_NH == lichThucHanh.hknk
                     && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
                     && e.MaNhomHP == lichThucHanh.manhomhp);
 
-            if (updateGiangDay != null)
+            if (!updateGiangDay.IsNullOrEmpty())
             {
-                updateGiangDay.onSchedule = false;
+                foreach (var r in updateGiangDay)
+                {
+                    r.onSchedule = false;
+                }
                 await _Dbcontext.SaveChangesAsync();
                 return new ApiResponse
                 {
@@ -154,8 +339,5 @@ namespace MyWebAPI.Repository
             }
             
         }
-
-
-
     }
 }

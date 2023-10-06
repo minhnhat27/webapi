@@ -24,8 +24,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyWebAPI", opt =>
     {
-        opt.WithOrigins("https://localhost:44362").AllowAnyMethod().AllowAnyHeader();
-        //opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        //opt.WithOrigins("https://localhost:44362").AllowAnyMethod().AllowAnyHeader();
+        opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
 });
 
@@ -56,7 +56,7 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

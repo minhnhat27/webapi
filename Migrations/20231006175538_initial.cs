@@ -91,7 +91,7 @@ namespace MyWebAPI.Migrations
                 columns: table => new
                 {
                     HK_NH = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
-                    NgayBatDau = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    NgayBatDau = table.Column<DateTime>(type: "datetime2", maxLength: 20, nullable: false),
                     HocKyHienTai = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -111,6 +111,17 @@ namespace MyWebAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_HocPhans", x => x.MaHP);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NgayNghis",
+                columns: table => new
+                {
+                    ngayNghi = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NgayNghis", x => x.ngayNghi);
                 });
 
             migrationBuilder.CreateTable(
@@ -271,7 +282,7 @@ namespace MyWebAPI.Migrations
                 {
                     MaNhomHP = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
                     SoLuongSV = table.Column<int>(type: "int", nullable: false),
-                    HocPhanMaHP = table.Column<string>(type: "nvarchar(10)", nullable: true)
+                    HocPhanMaHP = table.Column<string>(type: "nvarchar(10)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -280,7 +291,8 @@ namespace MyWebAPI.Migrations
                         name: "FK_NhomHocPhans_HocPhans_HocPhanMaHP",
                         column: x => x.HocPhanMaHP,
                         principalTable: "HocPhans",
-                        principalColumn: "MaHP");
+                        principalColumn: "MaHP",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -320,7 +332,9 @@ namespace MyWebAPI.Migrations
                     HK_NH = table.Column<string>(type: "nvarchar(15)", nullable: false),
                     GiangVienId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     BuoiThucHanhSTT = table.Column<int>(type: "int", nullable: false),
-                    MaNhomHP = table.Column<string>(type: "nvarchar(15)", nullable: false)
+                    MaNhomHP = table.Column<string>(type: "nvarchar(15)", nullable: false),
+                    caNgay = table.Column<bool>(type: "bit", nullable: false),
+                    onSchedule = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -421,20 +435,19 @@ namespace MyWebAPI.Migrations
                 name: "LichThucHanhs",
                 columns: table => new
                 {
+                    PhongSoPhong = table.Column<int>(type: "int", nullable: false),
                     TenBuoi = table.Column<string>(type: "nvarchar(10)", nullable: false),
                     HK_NH = table.Column<string>(type: "nvarchar(15)", nullable: false),
                     GiangVienId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     BuoiThucHanhSTT = table.Column<int>(type: "int", nullable: false),
                     MaNhomHP = table.Column<string>(type: "nvarchar(15)", nullable: false),
                     NgayThucHanh = table.Column<DateTime>(type: "datetime2", maxLength: 20, nullable: false),
-                    CaNgay = table.Column<bool>(type: "bit", nullable: false),
-                    PhongSoPhong = table.Column<int>(type: "int", nullable: false),
                     TuanSoTuan = table.Column<int>(type: "int", nullable: false),
                     GhiChu = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LichThucHanhs", x => new { x.TenBuoi, x.HK_NH, x.GiangVienId, x.MaNhomHP, x.BuoiThucHanhSTT });
+                    table.PrimaryKey("PK_LichThucHanhs", x => new { x.TenBuoi, x.HK_NH, x.GiangVienId, x.MaNhomHP, x.BuoiThucHanhSTT, x.PhongSoPhong });
                     table.ForeignKey(
                         name: "FK_LichThucHanhs_Buois_TenBuoi",
                         column: x => x.TenBuoi,
@@ -592,6 +605,9 @@ namespace MyWebAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "LichThucHanhs");
+
+            migrationBuilder.DropTable(
+                name: "NgayNghis");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

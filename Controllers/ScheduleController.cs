@@ -56,6 +56,14 @@ namespace MyWebAPI.Controllers
             }
         }
 
+        [HttpGet("getPraticeSchedule")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> getPraticeSchedule()
+        {
+            var result = await _scheduleRepository.getPracticeSchedule();
+            return Ok(result);
+        }
+
         [HttpPost("xepphong")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult xepphong([FromBody]LichThucHanhVM lichThucHanh)

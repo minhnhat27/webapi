@@ -74,6 +74,42 @@ namespace MyWebAPI.Repository
             return practice;
         }
 
+        public async Task<ViewSchedule> getPracticeSchedule()
+        {
+            var week = _Dbcontext.Tuans.Select(e => e.SoTuan);
+            var currentSemester = await _Dbcontext.HocKyNamHocs.SingleAsync(e => e.HocKyHienTai == true);
+            var room = _Dbcontext.Phongs.Select(e => e.SoPhong).ToList();
+
+            var thuchanh = _Dbcontext.LichThucHanhs.Where(
+                e => e.GiangDay.onSchedule == true
+                && e.HK_NH == currentSemester.HK_NH)
+                .Select(e => new ViewLichThucHanhVM
+                {
+                    ngaythuchanh = e.NgayThucHanh,
+                    buoi = e.TenBuoi,
+                    sotuan = e.TuanSoTuan,
+                    sttbuoithuchanh = e.BuoiThucHanhSTT,
+                    manhomhp = e.MaNhomHP,
+                    phong = e.PhongSoPhong,
+                    mscb = e.GiangVienId,
+                    hoten = e.GiangDay.GiangVien.HoTen!,
+                    hknk = e.HK_NH,
+                    tenhp = e.GiangDay.NhomHocPhan.HocPhan.TenHocPhan
+                }).ToList();
+
+            var practice = new ViewSchedule
+            {
+                hknh = currentSemester.HK_NH,
+                ngaybatdauhk = currentSemester.NgayBatDau,
+                sotuan = week.Count(),
+                lichThucHanhs = thuchanh,
+                phong = room
+            };
+
+            return practice;
+        }
+
+        [Authorize]
         public List<int> roomArrange(LichThucHanhVM lichThucHanh)
         {
             try
@@ -82,7 +118,8 @@ namespace MyWebAPI.Repository
                 var soluongSV = _Dbcontext.NhomHocPhans.Single(e => e.MaNhomHP == lichThucHanh.manhomhp).SoLuongSV;
                 var hocphanphuhop = _Dbcontext.HocPhanPhuHops.Where(e => e.MaHP == maHP).Select(e => new {e.MaHP, e.SoPhong, e.Phong.SoLuongMayTinh}).ToList();
                 var LichThucHanh = _Dbcontext.LichThucHanhs.Where(
-                    e => e.TenBuoi == lichThucHanh.buoi 
+                    e => e.TenBuoi == lichThucHanh.buoi
+                    && e.NgayThucHanh.Equals(lichThucHanh.ngaythuchanh)
                     && e.TuanSoTuan == lichThucHanh.sotuan
                     && e.GiangDay.onSchedule == true).Select(e => e.PhongSoPhong).ToList();
 

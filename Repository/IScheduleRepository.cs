@@ -10,5 +10,6 @@ namespace MyWebAPI.Repository
         public Task<ApiResponse> saveSchedule(LichThucHanhVM lichThucHanh);
         public Task<ApiResponse> updateOnSchedule(LichThucHanhVM lichThucHanh);
         public List<int> roomArrange(LichThucHanhVM lichThucHanh);
+        public Task<ViewSchedule> getPracticeSchedule();
     }
 }

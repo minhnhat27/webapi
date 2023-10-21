@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using DangKyPhongThucHanhTruongCNTT.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MyWebAPI.Data;
@@ -16,12 +17,14 @@ namespace MyWebAPI.Repository
         private readonly UserManager<GiangVien> _userManager;
         private readonly MyDbContext _dbContext;
         private readonly IConfiguration _config;
-        public AccountRepository(SignInManager<GiangVien> signinManager, UserManager<GiangVien> userManager, MyDbContext dbContext, IConfiguration config)
+        private readonly SendMailService _mailService;
+        public AccountRepository(SignInManager<GiangVien> signinManager, UserManager<GiangVien> userManager, MyDbContext dbContext, IConfiguration config, SendMailService mailService)
         {
             _signinManager = signinManager;
             _dbContext = dbContext;
             _config = config;
             _userManager = userManager;
+            _mailService = mailService;
         }
 
         public async Task<ApiResponse> LoginAsync(LoginModel login)
@@ -103,23 +106,137 @@ namespace MyWebAPI.Repository
             };
         }
 
-        public async Task<ApiResponse> getIdfromEmail(string email)
+        public string getEmailfromId(string id)
         {
-            var result = await _dbContext.Users.SingleOrDefaultAsync(e => e.Email == email);
+            var result = _dbContext.Users.SingleOrDefault(e => e.Id == id);
             if (result == null)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return result.Email!;
+            }
+        }
+        public async Task<ApiResponse> sendToken(string id)
+        {
+            var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Id == id || e.Email == id);
+            if (user == null)
             {
                 return new ApiResponse
                 {
-                    success = false
+                    success = false,
+                    message = "User doesn't exist"
+                };
+            }
+
+            var email = getEmailfromId(id);
+            if (!string.IsNullOrEmpty(email))
+            {
+                id = email;
+            }
+            _mailService.setToken();
+            var token = _mailService.getToken().ToString();
+            var sub = "Yêu cầu khôi phục mật khẩu";
+            await _mailService.SendEmailAsync(id, sub, token);
+            
+            return new ApiResponse
+            {
+                success = true,
+                message = "Success",
+                data = token
+            };
+        }
+
+        public async Task<ApiResponse> checkToken(ForgetPasswordModel forgetPassword)
+        {
+            var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Id == forgetPassword.id || e.Email == forgetPassword.id);
+            if (user == null)
+            {
+                return new ApiResponse
+                {
+                    success = false,
+                    message = "Fail"
+                };
+            }
+            if(forgetPassword.token == null)
+            {
+                return new ApiResponse
+                {
+                    success = false,
+                    message = "Fail"
+                };
+            }
+            var result = forgetPassword.token.Equals(_mailService.getToken().ToString());
+            if (result)
+            {
+                return new ApiResponse
+                {
+                    success = true,
+                    message = "Success"
                 };
             }
             else
             {
                 return new ApiResponse
                 {
-                    success = true,
-                    data = result.Id
+                    success = false,
+                    message = "Fail"
                 };
+            }
+        }
+        public async Task<ApiResponse> changePassword(ForgetPasswordModel forgetPassword)
+        {
+            var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Id == forgetPassword.id || e.Email == forgetPassword.id);
+            if (forgetPassword.token == null || forgetPassword.newPassword == null)
+            {
+                return new ApiResponse
+                {
+                    success = false,
+                    message = "Fail"
+                };
+            }
+            if (!forgetPassword.token.Equals(_mailService.getToken().ToString())){
+                return new ApiResponse
+                {
+                    success = false,
+                    message = "Fail"
+                };
+            }
+            if (user == null)
+            {
+                return new ApiResponse
+                {
+                    success = false,
+                    message = "Fail"
+                };
+            }
+            else
+            {
+                //var token = _mailService.getToken().ToString();
+                //await _userManager.RemovePasswordAsync(user);
+                //await _userManager.AddPasswordAsync(user, token);
+                //await _userManager.ChangePasswordAsync(user, token, forgetPassword.newPassword);
+
+                string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, forgetPassword.newPassword);
+
+                if (result.Succeeded)
+                {
+                    return new ApiResponse
+                    {
+                        success = true,
+                        message = "Success"
+                    };
+                }
+                else
+                {
+                    return new ApiResponse
+                    {
+                        success = false,
+                        message = "Fail"
+                    };
+                }
             }
         }
     }

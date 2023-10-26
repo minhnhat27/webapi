@@ -56,11 +56,12 @@ namespace DangKyPhongThucHanhTruongCNTT.Services
                     await smtp.AuthenticateAsync(_settings.Mail, _settings.Password);
                     await smtp.SendAsync(message);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     Directory.CreateDirectory("MailsSave");
-                    var emailsavefile = string.Format(@"MailsSave/{0}.txt", Guid.NewGuid());
+                    var emailsavefile = string.Format(@"MailsSave/{0}.txt", email + Guid.NewGuid());
                     await message.WriteToAsync(emailsavefile);
+                    await File.AppendAllTextAsync(emailsavefile, ex.Message);
                 }
                 await smtp.DisconnectAsync(true);
             }

@@ -11,4 +11,6 @@ public partial class Dulieumau
     public Geometry? TheGeom { get; set; }
 
     public string? Name { get; set; }
+
+    public double? dis_met { get; set; }
 }

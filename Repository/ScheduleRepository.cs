@@ -27,11 +27,11 @@ namespace MyWebAPI.Repository
         [Authorize]
         public async Task<LichGiangDayVM> getAllCourseGroupofLecturer(string MSCB)
         {
-            var week = _Dbcontext.Tuans.Select(e => e.SoTuan);
+            var week = await _Dbcontext.Tuans.Select(e => e.SoTuan).ToListAsync();
             var currentSemester = await _Dbcontext.HocKyNamHocs.SingleAsync(e => e.HocKyHienTai == true);
-            var dayoff = _Dbcontext.NgayNghis.Select(e => e.ngayNghi).ToList();
+            var dayoff = await _Dbcontext.NgayNghis.Select(e => e.ngayNghi).ToListAsync();
 
-            var teaching = _Dbcontext.GiangDays
+            var teaching = await _Dbcontext.GiangDays
                 .Where(e => e.GiangVienId == MSCB && e.HK_NH == currentSemester.HK_NH)
                 .Select(e => new GiangDayVM
                 {
@@ -39,9 +39,9 @@ namespace MyWebAPI.Repository
                     sttbuoithuchanh = e.BuoiThucHanhSTT,
                     onSchedule = e.onSchedule
                 }).OrderBy(e => e.manhomhp)
-                .ToList();
+                .ToListAsync();
 
-            var thuchanh = _Dbcontext.LichThucHanhs.Where(
+            var thuchanh = await _Dbcontext.LichThucHanhs.Where(
                 e => e.GiangVienId == MSCB
                 && e.HK_NH == currentSemester.HK_NH)
                 .GroupBy(e => new {
@@ -58,7 +58,7 @@ namespace MyWebAPI.Repository
                     sttbuoithuchanh = e.First().BuoiThucHanhSTT,
                     manhomhp = e.First().MaNhomHP,
                     onSchedule = e.First().GiangDay.onSchedule
-                }).ToList();
+                }).ToListAsync();
 
             var practice = new LichGiangDayVM
             {
@@ -76,11 +76,11 @@ namespace MyWebAPI.Repository
 
         public async Task<ViewSchedule> getPracticeSchedule()
         {
-            var week = _Dbcontext.Tuans.Select(e => e.SoTuan);
+            var week = await _Dbcontext.Tuans.Select(e => e.SoTuan).ToListAsync();
             var currentSemester = await _Dbcontext.HocKyNamHocs.SingleAsync(e => e.HocKyHienTai == true);
-            var room = _Dbcontext.Phongs.Select(e => e.SoPhong).ToList();
+            var room = await _Dbcontext.Phongs.Select(e => e.SoPhong).ToListAsync();
 
-            var thuchanh = _Dbcontext.LichThucHanhs.Where(
+            var thuchanh = await _Dbcontext.LichThucHanhs.Where(
                 e => e.GiangDay.onSchedule == true
                 && e.HK_NH == currentSemester.HK_NH)
                 .Select(e => new ViewLichThucHanhVM
@@ -95,7 +95,7 @@ namespace MyWebAPI.Repository
                     hoten = e.GiangDay.GiangVien.HoTen!,
                     hknk = e.HK_NH,
                     tenhp = e.GiangDay.NhomHocPhan.HocPhan.TenHocPhan
-                }).ToList();
+                }).ToListAsync();
 
             var practice = new ViewSchedule
             {
@@ -239,13 +239,13 @@ namespace MyWebAPI.Repository
         [Authorize]
         public async Task<ApiResponse> saveSchedule(LichThucHanhVM lichThucHanh)
         {
-            var removeModel = _Dbcontext.LichThucHanhs.Where(
+            var removeModel = await _Dbcontext.LichThucHanhs.Where(
                     e => e.GiangVienId == lichThucHanh.mscb
                     && e.HK_NH == lichThucHanh.hknk
                     && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
-                    && e.MaNhomHP == lichThucHanh.manhomhp);
+                    && e.MaNhomHP == lichThucHanh.manhomhp).ToListAsync();
 
-            var updateGiangDay = _Dbcontext.GiangDays.SingleOrDefault(
+            var updateGiangDay = await _Dbcontext.GiangDays.SingleOrDefaultAsync(
                    e => e.GiangVienId == lichThucHanh.mscb
                    && e.HK_NH == lichThucHanh.hknk
                    && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
@@ -347,11 +347,11 @@ namespace MyWebAPI.Repository
         [Authorize]
         public async Task<ApiResponse> updateOnSchedule(LichThucHanhVM lichThucHanh)
         {
-            var updateGiangDay = _Dbcontext.GiangDays.Where(
+            var updateGiangDay = await _Dbcontext.GiangDays.Where(
                     e => e.GiangVienId == lichThucHanh.mscb
                     && e.HK_NH == lichThucHanh.hknk
                     && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
-                    && e.MaNhomHP == lichThucHanh.manhomhp);
+                    && e.MaNhomHP == lichThucHanh.manhomhp).ToListAsync();
 
             if (!updateGiangDay.IsNullOrEmpty())
             {

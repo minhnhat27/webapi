@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using MyWebAPI.Data.ViewModels;
+﻿using Microsoft.AspNetCore.Mvc;
 using MyWebAPI.Data.ViewModels.Schedule;
 using MyWebAPI.Repository;
 

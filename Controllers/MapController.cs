@@ -76,5 +76,22 @@ namespace MyWebAPI.Controllers
             var w = new GeoJsonWriter();
             return Ok(w.Write(featureCollection));
         }
+
+        [HttpPost("saveFeature")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult saveFeature(string q)
+        {
+            try
+            {
+                var sql = FormattableStringFactory.Create(q);
+                _context.Dulieumaus.FromSql(sql);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
     }
 }

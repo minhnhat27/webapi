@@ -26,19 +26,54 @@ namespace MyWebAPI.Repository
             _userManager = userManager;
             _mailService = mailService;
         }
+        private string getEmailById(string id)
+        {
+            var result = _dbContext.Users.SingleOrDefault(e => e.Id == id);
+            if (result == null)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return result.Email!;
+            }
+        }
+        private string getIdByEmail(string email)
+        {
+            var result = _dbContext.Users.SingleOrDefault(e => e.Email == email);
+            if (result == null)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return result.Id;
+            }
+        }
 
         public async Task<ApiResponse> LoginAsync(LoginModel login)
         {
             var result = await _signinManager.PasswordSignInAsync(login.MSCB, login.Password, false, false);
-            if(!result.Succeeded)
+            GiangVien? user;
+            if (!result.Succeeded)
             {
-                return new ApiResponse
+                var uid = getIdByEmail(login.MSCB);
+                var resultEmail = await _signinManager.PasswordSignInAsync(uid, login.Password, false, false);
+                if (!resultEmail.Succeeded)
                 {
-                    success = false,
-                    message = "Username or Password incorrect."
-                };
+                    return new ApiResponse
+                    {
+                        success = false,
+                        message = "Username or Password incorrect."
+                    };
+                }
+                user = await _userManager.FindByIdAsync(uid);
             }
-            var user = await _userManager.FindByIdAsync(login.MSCB);
+            else
+            {
+                user = await _userManager.FindByIdAsync(login.MSCB);
+            }
+            
             var auth = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user!.Id),
@@ -105,19 +140,6 @@ namespace MyWebAPI.Repository
                 data = new JwtSecurityTokenHandler().WriteToken(token)
             };
         }
-
-        public string getEmailfromId(string id)
-        {
-            var result = _dbContext.Users.SingleOrDefault(e => e.Id == id);
-            if (result == null)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                return result.Email!;
-            }
-        }
         public async Task<ApiResponse> sendToken(string id)
         {
             var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Id == id || e.Email == id);
@@ -130,7 +152,7 @@ namespace MyWebAPI.Repository
                 };
             }
 
-            var email = getEmailfromId(id);
+            var email = getEmailById(id);
             if (!string.IsNullOrEmpty(email))
             {
                 id = email;

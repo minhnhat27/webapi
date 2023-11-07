@@ -110,7 +110,7 @@ namespace MyWebAPI.Repository
         }
 
         [Authorize]
-        public List<int> roomArrange(LichThucHanhVM lichThucHanh)
+        private List<int> roomArrange(LichThucHanhVM lichThucHanh)
         {
             try
             {

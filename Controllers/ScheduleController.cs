@@ -60,13 +60,5 @@ namespace MyWebAPI.Controllers
             var result = await _scheduleRepository.getPracticeSchedule();
             return Ok(result);
         }
-
-        [HttpPost("xepphong")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult xepphong([FromBody]LichThucHanhVM lichThucHanh)
-        {
-            var result = _scheduleRepository.roomArrange(lichThucHanh);
-            return Ok(result);
-        }
     }
 }

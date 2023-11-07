@@ -6,10 +6,9 @@ namespace MyWebAPI.Repository
 {
     public interface IScheduleRepository
     {
-        public Task<LichGiangDayVM> getAllCourseGroupofLecturer(string MSCB);
-        public Task<ApiResponse> saveSchedule(LichThucHanhVM lichThucHanh);
-        public Task<ApiResponse> updateOnSchedule(LichThucHanhVM lichThucHanh);
-        public List<int> roomArrange(LichThucHanhVM lichThucHanh);
-        public Task<ViewSchedule> getPracticeSchedule();
+        Task<LichGiangDayVM> getAllCourseGroupofLecturer(string MSCB);
+        Task<ApiResponse> saveSchedule(LichThucHanhVM lichThucHanh);
+        Task<ApiResponse> updateOnSchedule(LichThucHanhVM lichThucHanh);
+        Task<ViewSchedule> getPracticeSchedule();
     }
 }

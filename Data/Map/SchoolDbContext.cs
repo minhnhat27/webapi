@@ -24,17 +24,7 @@ public partial class SchoolDbContext : DbContext
     {
         modelBuilder.Entity<Dulieumau>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("DULIEUMAU");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("id");
-            entity.Property(e => e.Name).HasMaxLength(50);
-            entity.Property(e => e.TheGeom)
-                .HasColumnType("geometry")
-                .HasColumnName("The_geom");
+            entity.HasKey(e => e.Id).HasName("PK__DULIEUMA__3213E83F86FB9790");
         });
 
         OnModelCreatingPartial(modelBuilder);

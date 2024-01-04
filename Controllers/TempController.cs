@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MyWebAPI.Data;
-using MyWebAPI.Models;
-using MyWebAPI.Repository;
+using webapi.Data;
+using webapi.Models;
 
-namespace MyWebAPI.Controllers
+namespace webapi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

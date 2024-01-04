@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace MyWebAPI.Models
+namespace webapi.Models
 {
     [PrimaryKey(nameof(SoPhong), nameof(MaHP))]
     public class HocPhanPhuHop

@@ -1,15 +1,11 @@
-using DangKyPhongThucHanhTruongCNTT.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MyWebAPI.Data;
-using MyWebAPI.Data.Map;
-using MyWebAPI.Models;
-using MyWebAPI.Repository;
 using System.Text;
+using webapi.Data;
+using webapi.Models;
+using webapi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,25 +19,21 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddDbContext<SchoolDbContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MapConnection"));
-});
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyWebAPI", opt =>
     {
-        //opt.WithOrigins("https://localhost:44362").AllowAnyMethod().AllowAnyHeader();
-        opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        //opt.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
+        opt.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
     });
 });
 
 builder.Services.AddIdentity<GiangVien, Role>().AddEntityFrameworkStores<MyDbContext>().AddDefaultTokenProviders();
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
-builder.Services.AddSingleton<SendMailService>();
+builder.Services.AddSingleton<ISendMailService, SendMailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddAuthentication(options =>

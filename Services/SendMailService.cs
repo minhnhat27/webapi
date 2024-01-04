@@ -2,10 +2,7 @@
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using RTools_NTS.Util;
-using System;
-
-namespace DangKyPhongThucHanhTruongCNTT.Services
+namespace webapi.Services
 {
     public class MailSettings
     {
@@ -16,7 +13,7 @@ namespace DangKyPhongThucHanhTruongCNTT.Services
         public int Port { get; set; }
     }
 
-    public class SendMailService
+    public class SendMailService : ISendMailService
     {
         private readonly MailSettings _settings;
 
@@ -29,9 +26,9 @@ namespace DangKyPhongThucHanhTruongCNTT.Services
         private int token { get; set; }
         public void setToken()
         {
-            this.token = random.Next(000010, 999989);
+            token = random.Next(100100, 999888);
         }
-        public int getToken() { return this.token; }
+        public int getToken() { return token; }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
@@ -48,7 +45,7 @@ namespace DangKyPhongThucHanhTruongCNTT.Services
 
             message.Body = builder.ToMessageBody();
 
-            using(var smtp =  new SmtpClient())
+            using (var smtp = new SmtpClient())
             {
                 try
                 {
@@ -65,7 +62,7 @@ namespace DangKyPhongThucHanhTruongCNTT.Services
                 }
                 await smtp.DisconnectAsync(true);
             }
-            
+
         }
     }
 }

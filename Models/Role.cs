@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace MyWebAPI.Models
+namespace webapi.Models
 {
     public class Role : IdentityRole
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace MyWebAPI.Models
+namespace webapi.Models
 {
     [PrimaryKey(nameof(HK_NH), nameof(GiangVienId), nameof(BuoiThucHanhSTT), nameof(MaNhomHP))]
     public class GiangDay

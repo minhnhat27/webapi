@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace MyWebAPI.Models
+namespace webapi.Models
 {
     public class GiangVien : IdentityUser
     {

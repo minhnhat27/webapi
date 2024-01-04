@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MyWebAPI.Models
+namespace webapi.Models
 {
     [PrimaryKey(nameof(TenBuoi), nameof(HK_NH), nameof(GiangVienId), nameof(MaNhomHP), nameof(BuoiThucHanhSTT), nameof(PhongSoPhong))]
     public class LichThucHanh
@@ -23,7 +23,7 @@ namespace MyWebAPI.Models
         public int BuoiThucHanhSTT { get; set; }
         public string MaNhomHP { get; set; }
         public GiangDay GiangDay { get; set; }
-        
+
         [MaxLength(100)]
         public string? GhiChu { get; set; }
     }

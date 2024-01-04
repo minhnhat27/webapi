@@ -1,24 +1,26 @@
-﻿using DangKyPhongThucHanhTruongCNTT.Services;
+﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MyWebAPI.Data;
-using MyWebAPI.Data.ViewModels;
-using MyWebAPI.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using webapi.Data;
+using webapi.Models;
+using webapi.ViewModels;
+using webapi.ViewModels.Request;
+using webapi.ViewModels.Response;
 
-namespace MyWebAPI.Repository
+namespace webapi.Services
 {
-    public class AccountRepository : IAccountRepository
+    public class AccountService : IAccountService
     {
         private readonly SignInManager<GiangVien> _signinManager;
         private readonly UserManager<GiangVien> _userManager;
         private readonly MyDbContext _dbContext;
         private readonly IConfiguration _config;
-        private readonly SendMailService _mailService;
-        public AccountRepository(SignInManager<GiangVien> signinManager, UserManager<GiangVien> userManager, MyDbContext dbContext, IConfiguration config, SendMailService mailService)
+        private readonly ISendMailService _mailService;
+        public AccountService(SignInManager<GiangVien> signinManager, UserManager<GiangVien> userManager, MyDbContext dbContext, IConfiguration config, ISendMailService mailService)
         {
             _signinManager = signinManager;
             _dbContext = dbContext;
@@ -26,7 +28,7 @@ namespace MyWebAPI.Repository
             _userManager = userManager;
             _mailService = mailService;
         }
-        private string getEmailById(string id)
+        private string GetEmailById(string id)
         {
             var result = _dbContext.Users.SingleOrDefault(e => e.Id == id);
             if (result == null)
@@ -38,7 +40,7 @@ namespace MyWebAPI.Repository
                 return result.Email!;
             }
         }
-        private string getIdByEmail(string email)
+        private string GetIdByEmail(string email)
         {
             var result = _dbContext.Users.SingleOrDefault(e => e.Email == email);
             if (result == null)
@@ -51,38 +53,37 @@ namespace MyWebAPI.Repository
             }
         }
 
-        public async Task<ApiResponse> LoginAsync(LoginModel login)
+        public async Task<JwtResponse> LoginAsync(LoginModel login)
         {
-            var result = await _signinManager.PasswordSignInAsync(login.MSCB, login.Password, false, false);
+            var result = await _signinManager.PasswordSignInAsync(login.username, login.password, false, false);
             GiangVien? user;
             if (!result.Succeeded)
             {
-                var uid = getIdByEmail(login.MSCB);
-                var resultEmail = await _signinManager.PasswordSignInAsync(uid, login.Password, false, false);
+                var uid = GetIdByEmail(login.username);
+                var resultEmail = await _signinManager.PasswordSignInAsync(uid, login.password, false, false);
                 if (!resultEmail.Succeeded)
                 {
-                    return new ApiResponse
+                    return new JwtResponse
                     {
-                        success = false,
-                        message = "Username or Password incorrect."
+                        success = false
                     };
                 }
                 user = await _userManager.FindByIdAsync(uid);
             }
             else
             {
-                user = await _userManager.FindByIdAsync(login.MSCB);
+                user = await _userManager.FindByIdAsync(login.username);
             }
-            
+
             var auth = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user!.Id),
                 new Claim(ClaimTypes.Name, user.HoTen!),
-                new Claim(ClaimTypes.Role, "Admin")
-                //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim(ClaimTypes.MobilePhone, user.SoDienThoai!),
+                new Claim(ClaimTypes.Role, "User")
             };
             var authenKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SerectKey"]!));
-            
             var token = new JwtSecurityToken(
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"],
@@ -91,54 +92,60 @@ namespace MyWebAPI.Repository
                 signingCredentials: new SigningCredentials(authenKey, SecurityAlgorithms.HmacSha256)
             );
 
-            return new ApiResponse
+            return new JwtResponse
             {
                 success = true,
-                message = "Login Success!",
-                data = new JwtSecurityTokenHandler().WriteToken(token)
+                userId = user.Id,
+                name = user.HoTen,
+                accessToken = new JwtSecurityTokenHandler().WriteToken(token)
             };
         }
 
-        public async Task<ApiResponse> ExternalLogin(string email)
+        public async Task<JwtResponse> ExternalLogin(LoginGoogleRequest googleRequest)
         {
-            if(email == null)
+            try
             {
-                return new ApiResponse
+                var payload = GoogleJsonWebSignature.ValidateAsync(googleRequest.credential, new GoogleJsonWebSignature.ValidationSettings()).Result;
+                var user = await _userManager.FindByEmailAsync(payload.Email);
+                if (user == null)
                 {
-                    success = false,
-                    message = "Haven't External login"
+                    return new JwtResponse
+                    {
+                        success = false
+                    };
+                }
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user!.Id),
+                    new Claim(ClaimTypes.Name, user.HoTen!),
+                    new Claim(ClaimTypes.Email, user.Email!),
+                    new Claim(ClaimTypes.MobilePhone, user.SoDienThoai!),
+                    new Claim(ClaimTypes.Role, "User")
+                };
+                var authenKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SerectKey"]!));
+                var token = new JwtSecurityToken(
+                    issuer: _config["JWT:ValidIssuer"],
+                    audience: _config["JWT:ValidAudience"],
+                    expires: DateTime.UtcNow.AddDays(1),
+                    claims: claims,
+                    signingCredentials: new SigningCredentials(authenKey, SecurityAlgorithms.HmacSha256)
+                );
+                return new JwtResponse
+                {
+                    success = true,
+                    userId = user.Id,
+                    name = user.HoTen,
+                    accessToken = new JwtSecurityTokenHandler().WriteToken(token)
+                };
+
+            }
+            catch
+            {
+                return new JwtResponse
+                {
+                    success = false
                 };
             }
-            var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Email == email);
-            if (user == null)
-            {
-                return new ApiResponse
-                {
-                    success = false,
-                    message = "Email of user does not exist."
-                };
-            }
-            await _signinManager.SignInAsync(user, false);
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user!.Id),
-                new Claim(ClaimTypes.Name, user.HoTen!),
-                new Claim(ClaimTypes.Role, "Admin")
-            };
-            var authenKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SerectKey"]!));
-            var token = new JwtSecurityToken(
-                issuer: _config["JWT:ValidIssuer"],
-                audience: _config["JWT:ValidAudience"],
-                expires: DateTime.UtcNow.AddDays(1),
-                claims: claims,
-                signingCredentials: new SigningCredentials(authenKey, SecurityAlgorithms.HmacSha256)
-            );
-            return new ApiResponse
-            {
-                success = true,
-                message = "External login success",
-                data = new JwtSecurityTokenHandler().WriteToken(token)
-            };
         }
         public async Task<ApiResponse> sendToken(string id)
         {
@@ -152,7 +159,7 @@ namespace MyWebAPI.Repository
                 };
             }
 
-            var email = getEmailById(id);
+            var email = GetEmailById(id);
             if (!string.IsNullOrEmpty(email))
             {
                 id = email;
@@ -161,7 +168,7 @@ namespace MyWebAPI.Repository
             var token = _mailService.getToken().ToString();
             var sub = "Yêu cầu khôi phục mật khẩu";
             await _mailService.SendEmailAsync(id, sub, token);
-            
+
             return new ApiResponse
             {
                 success = true,
@@ -181,7 +188,7 @@ namespace MyWebAPI.Repository
                     message = "Fail"
                 };
             }
-            if(forgetPassword.token == null)
+            if (forgetPassword.token == null)
             {
                 return new ApiResponse
                 {
@@ -218,7 +225,8 @@ namespace MyWebAPI.Repository
                     message = "Fail"
                 };
             }
-            if (!forgetPassword.token.Equals(_mailService.getToken().ToString())){
+            if (!forgetPassword.token.Equals(_mailService.getToken().ToString()))
+            {
                 return new ApiResponse
                 {
                     success = false,

@@ -5,6 +5,7 @@ using webapi.ViewModels.Schedule;
 using webapi.ViewModels.Request;
 using webapi.Data;
 using webapi.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace webapi.Services
 {
@@ -95,6 +96,7 @@ namespace webapi.Services
 
             var practice = new ScheduleResponse
             {
+                hknh = currentSemester.HK_NH,
                 ngaybatdau = currentSemester.NgayBatDau.AddDays((double)(w - 1) * 7),
                 sotuan = week.Count(),
                 lichThucHanhs = thuchanh,
@@ -138,18 +140,23 @@ namespace webapi.Services
             return practice;
         }
 
-        private List<int> RoomArrange(LichThucHanhVM lichThucHanh)
+        private async Task<List<int>> RoomArrange(LichThucHanhVM lichThucHanh)
         {
             try
             {
-                var maHP = _Dbcontext.NhomHocPhans.Single(e => e.MaNhomHP == lichThucHanh.manhomhp).HocPhanMaHP;
-                var soluongSV = _Dbcontext.NhomHocPhans.Single(e => e.MaNhomHP == lichThucHanh.manhomhp).SoLuongSV;
-                var hocphanphuhop = _Dbcontext.HocPhanPhuHops.Where(e => e.MaHP == maHP).Select(e => new { e.MaHP, e.SoPhong, e.Phong.SoLuongMayTinh }).ToList();
-                var LichThucHanh = _Dbcontext.LichThucHanhs.Where(
-                    e => e.TenBuoi == lichThucHanh.buoi
-                    && e.NgayThucHanh.Equals(lichThucHanh.ngaythuchanh)
-                    && e.TuanSoTuan == lichThucHanh.sotuan
-                    && e.GiangDay.onSchedule == true).Select(e => e.PhongSoPhong).ToList();
+                var maHP = _Dbcontext.NhomHocPhans
+                    .Single(e => e.MaNhomHP == lichThucHanh.manhomhp).HocPhanMaHP;
+                var soluongSV = _Dbcontext.NhomHocPhans
+                    .Single(e => e.MaNhomHP == lichThucHanh.manhomhp).SoLuongSV;
+                var hocphanphuhop = await _Dbcontext.HocPhanPhuHops
+                    .Where(e => e.MaHP == maHP)
+                    .Select(e => new { e.MaHP, e.SoPhong, e.Phong.SoLuongMayTinh }).ToListAsync();
+                var LichThucHanh = await _Dbcontext.LichThucHanhs
+                    .Where(e => e.TenBuoi == lichThucHanh.buoi && 
+                                e.NgayThucHanh.Equals(lichThucHanh.ngaythuchanh) && 
+                                e.TuanSoTuan == lichThucHanh.sotuan && 
+                                e.GiangDay.onSchedule == true)
+                    .Select(e => e.PhongSoPhong).ToListAsync();
 
                 int room = 0;
                 int room1 = 0;
@@ -193,7 +200,7 @@ namespace webapi.Services
                 }
                 if (!isRoom)
                 {
-                    var phong = _Dbcontext.Phongs.Select(e => new { e.SoPhong, e.SoLuongMayTinh }).ToList();
+                    var phong = await _Dbcontext.Phongs.Select(e => new { e.SoPhong, e.SoLuongMayTinh }).ToListAsync();
                     foreach (var p in phong)
                     {
                         if (LichThucHanh.Contains(p.SoPhong))
@@ -268,19 +275,21 @@ namespace webapi.Services
         {
             try
             {
+                //thay đổi lịch
                 var existedSchedule = await _Dbcontext.LichThucHanhs.Where(
                     e => e.GiangVienId == mscb
-                    && e.HK_NH == lichThucHanh.hknk
-                    && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
-                    && e.MaNhomHP == lichThucHanh.manhomhp).ToListAsync();
-
+                        && e.HK_NH == lichThucHanh.hknk
+                        && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
+                        && e.MaNhomHP == lichThucHanh.manhomhp).ToListAsync();
+                
+                //thêm lịch mới
                 var updateGiangDay = await _Dbcontext.GiangDays.SingleOrDefaultAsync(
                        e => e.GiangVienId == mscb
-                       && e.HK_NH == lichThucHanh.hknk
-                       && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
-                       && e.MaNhomHP == lichThucHanh.manhomhp);
+                           && e.HK_NH == lichThucHanh.hknk
+                           && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
+                           && e.MaNhomHP == lichThucHanh.manhomhp);
 
-                var room = RoomArrange(lichThucHanh);
+                var room = await RoomArrange(lichThucHanh);
                 var model = new LichThucHanh
                 {
                     NgayThucHanh = lichThucHanh.ngaythuchanh,
@@ -292,54 +301,115 @@ namespace webapi.Services
                     MaNhomHP = lichThucHanh.manhomhp,
                     PhongSoPhong = room[0]
                 };
-                if (existedSchedule != null)
-                {
-                    foreach (var r in existedSchedule)
-                    {
-                        _Dbcontext.LichThucHanhs.Remove(r);
-                    }
-                }
 
-                updateGiangDay!.onSchedule = true;
+                if (!existedSchedule.IsNullOrEmpty())
+                {
+                    _Dbcontext.RemoveRange(existedSchedule);
+				}
+				
+                if(updateGiangDay != null)
+                {
+					updateGiangDay.onSchedule = true;
+				}
+
                 if (room[0] == room[1])
                 {
                     await _Dbcontext.LichThucHanhs.AddAsync(model);
-                    await _Dbcontext.SaveChangesAsync();
                 }
                 else
                 {
                     var model1 = new LichThucHanh
-                    {
-                        NgayThucHanh = lichThucHanh.ngaythuchanh,
-                        TenBuoi = lichThucHanh.buoi,
-                        TuanSoTuan = lichThucHanh.sotuan,
-                        HK_NH = lichThucHanh.hknk,
-                        GiangVienId = mscb,
-                        BuoiThucHanhSTT = lichThucHanh.sttbuoithuchanh,
-                        MaNhomHP = lichThucHanh.manhomhp,
-                        PhongSoPhong = room[1]
-                    };
-                    await _Dbcontext.LichThucHanhs.AddAsync(model);
-                    await _Dbcontext.LichThucHanhs.AddAsync(model1);
-                    await _Dbcontext.SaveChangesAsync();
+					{
+						NgayThucHanh = lichThucHanh.ngaythuchanh,
+						TenBuoi = lichThucHanh.buoi,
+						TuanSoTuan = lichThucHanh.sotuan,
+						HK_NH = lichThucHanh.hknk,
+						GiangVienId = mscb,
+						BuoiThucHanhSTT = lichThucHanh.sttbuoithuchanh,
+						MaNhomHP = lichThucHanh.manhomhp,
+						PhongSoPhong = room[1]
+					};
+					await _Dbcontext.AddRangeAsync(model, model1);
                 }
-                return new ApiResponse
+				await _Dbcontext.SaveChangesAsync();
+				return new ApiResponse
                 {
-                    success = true,
-                    message = "Saved Successfully"
+                    Success = true,
+                    Message = "Saved Successfully"
                 };
             }
-            catch
+            catch(Exception ex)
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "Save Failed"
+                    Success = false,
+                    Message = ex.Message
                 };
             }
         }
 
-        public async Task<ApiResponse> updateOnSchedule(string mscb, OnScheduleRequest lichThucHanh)
+		public async Task<ApiResponse> saveScheduleToPreSemester(string mscb, LichThucHanhVM lichThucHanh)
+		{
+			try
+			{
+				var updateGiangDay = await _Dbcontext.GiangDays.SingleAsync(
+					   e => e.GiangVienId == mscb
+						   && e.HK_NH == lichThucHanh.hknk
+						   && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
+						   && e.MaNhomHP == lichThucHanh.manhomhp);
+
+				var room = await RoomArrange(lichThucHanh);
+				var model = new LichThucHanh
+				{
+					NgayThucHanh = lichThucHanh.ngaythuchanh,
+					TenBuoi = lichThucHanh.buoi,
+					TuanSoTuan = lichThucHanh.sotuan,
+					HK_NH = lichThucHanh.hknk,
+					GiangVienId = mscb,
+					BuoiThucHanhSTT = lichThucHanh.sttbuoithuchanh,
+					MaNhomHP = lichThucHanh.manhomhp,
+					PhongSoPhong = room[0]
+				};
+                updateGiangDay.onSchedule = true;
+
+				if (room[0] == room[1])
+				{
+					await _Dbcontext.LichThucHanhs.AddAsync(model);
+				}
+				else
+				{
+					var model_1 = new LichThucHanh
+					{
+						NgayThucHanh = lichThucHanh.ngaythuchanh,
+						TenBuoi = lichThucHanh.buoi,
+						TuanSoTuan = lichThucHanh.sotuan,
+						HK_NH = lichThucHanh.hknk,
+						GiangVienId = mscb,
+						BuoiThucHanhSTT = lichThucHanh.sttbuoithuchanh,
+						MaNhomHP = lichThucHanh.manhomhp,
+						PhongSoPhong = room[1]
+					};
+					await _Dbcontext.AddRangeAsync(model, model_1);
+				}
+				await _Dbcontext.SaveChangesAsync();
+				return new ApiResponse
+				{
+					Success = true,
+					Message = "Saved Successfully"
+				};
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponse
+				{
+					Success = false,
+					Message = ex.Message
+				};
+			}
+		}
+
+
+		public async Task<ApiResponse> updateOnSchedule(string mscb, OnScheduleRequest lichThucHanh)
         {
             try
             {
@@ -348,23 +418,35 @@ namespace webapi.Services
                     && e.HK_NH == lichThucHanh.hknk
                     && e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
                     && e.MaNhomHP == lichThucHanh.manhomhp).ToListAsync();
-                foreach (var r in updateGiangDay)
+				
+                var existedSchedule = await _Dbcontext.LichThucHanhs.Where(
+					e => e.GiangVienId == mscb
+						&& e.HK_NH == lichThucHanh.hknk
+						&& e.BuoiThucHanhSTT == lichThucHanh.sttbuoithuchanh
+						&& e.MaNhomHP == lichThucHanh.manhomhp).ToListAsync();
+
+				if (!existedSchedule.IsNullOrEmpty())
+				{
+					_Dbcontext.RemoveRange(existedSchedule);
+				}
+
+				foreach (var r in updateGiangDay)
                 {
                     r.onSchedule = false;
                 }
                 await _Dbcontext.SaveChangesAsync();
                 return new ApiResponse
                 {
-                    success = true,
-                    message = "Updated Successfully"
+                    Success = true,
+                    Message = "Updated Successfully"
                 };
             }
             catch
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "Update Fsailed!"
+                    Success = false,
+                    Message = "Update Fsailed!"
                 };
             }
 

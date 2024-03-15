@@ -5,10 +5,13 @@ namespace webapi.Models
 {
     public class GiangVien : IdentityUser
     {
-        [MaxLength(20)]
+        [MaxLength(30)]
         public string? HoTen { get; set; }
         [MaxLength(15)]
-        public string? SoDienThoai { get; set; }
+
+        public int? ResetCode { get; set; }
+
+        public DateTime? ResetCodeExpiresAt { get; set; }
 
         public ICollection<GiangDay> GiangDays { get; } = new List<GiangDay>();
     }

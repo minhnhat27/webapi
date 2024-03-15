@@ -2,7 +2,7 @@
 
 namespace webapi.Models
 {
-    public class Role : IdentityRole
+    public class Roles : IdentityRole
     {
         public string? Description { get; set; }
     }

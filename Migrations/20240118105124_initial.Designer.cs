@@ -12,8 +12,8 @@ using webapi.Data;
 namespace webapi.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    [Migration("20240103052411_Initial")]
-    partial class Initial
+    [Migration("20240118105124_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -131,7 +131,7 @@ namespace webapi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Buoi", b =>
+            modelBuilder.Entity("webapi.Models.Buoi", b =>
                 {
                     b.Property<string>("TenBuoi")
                         .HasMaxLength(10)
@@ -142,7 +142,7 @@ namespace webapi.Migrations
                     b.ToTable("Buois");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.BuoiThucHanh", b =>
+            modelBuilder.Entity("webapi.Models.BuoiThucHanh", b =>
                 {
                     b.Property<int>("STT")
                         .HasColumnType("int");
@@ -152,7 +152,7 @@ namespace webapi.Migrations
                     b.ToTable("BuoiThucHanhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.CPU", b =>
+            modelBuilder.Entity("webapi.Models.CPU", b =>
                 {
                     b.Property<string>("Ten")
                         .HasMaxLength(15)
@@ -163,7 +163,7 @@ namespace webapi.Migrations
                     b.ToTable("CPUs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.CaiDatPhanMem", b =>
+            modelBuilder.Entity("webapi.Models.CaiDatPhanMem", b =>
                 {
                     b.Property<int>("SoPhong")
                         .HasColumnType("int");
@@ -178,7 +178,7 @@ namespace webapi.Migrations
                     b.ToTable("CaiDatPhanMems");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.CauHinh", b =>
+            modelBuilder.Entity("webapi.Models.CauHinh", b =>
                 {
                     b.Property<int>("IdCauHinh")
                         .ValueGeneratedOnAdd()
@@ -206,7 +206,7 @@ namespace webapi.Migrations
                     b.ToTable("CauHinhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.GiangDay", b =>
+            modelBuilder.Entity("webapi.Models.GiangDay", b =>
                 {
                     b.Property<string>("HK_NH")
                         .HasColumnType("nvarchar(15)");
@@ -237,7 +237,7 @@ namespace webapi.Migrations
                     b.ToTable("GiangDays");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.GiangVien", b =>
+            modelBuilder.Entity("webapi.Models.GiangVien", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -283,12 +283,15 @@ namespace webapi.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("ResetCode")
+                        .HasMaxLength(15)
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ResetCodeExpiresAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SoDienThoai")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -310,7 +313,7 @@ namespace webapi.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.HocKyNamHoc", b =>
+            modelBuilder.Entity("webapi.Models.HocKyNamHoc", b =>
                 {
                     b.Property<string>("HK_NH")
                         .HasMaxLength(15)
@@ -328,7 +331,7 @@ namespace webapi.Migrations
                     b.ToTable("HocKyNamHocs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.HocPhan", b =>
+            modelBuilder.Entity("webapi.Models.HocPhan", b =>
                 {
                     b.Property<string>("MaHP")
                         .HasMaxLength(10)
@@ -350,7 +353,7 @@ namespace webapi.Migrations
                     b.ToTable("HocPhans");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.HocPhanPhuHop", b =>
+            modelBuilder.Entity("webapi.Models.HocPhanPhuHop", b =>
                 {
                     b.Property<int>("SoPhong")
                         .HasColumnType("int");
@@ -365,7 +368,7 @@ namespace webapi.Migrations
                     b.ToTable("HocPhanPhuHops");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.LichThucHanh", b =>
+            modelBuilder.Entity("webapi.Models.LichThucHanh", b =>
                 {
                     b.Property<string>("TenBuoi")
                         .HasColumnType("nvarchar(10)");
@@ -407,7 +410,7 @@ namespace webapi.Migrations
                     b.ToTable("LichThucHanhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.NgayNghi", b =>
+            modelBuilder.Entity("webapi.Models.NgayNghi", b =>
                 {
                     b.Property<DateTime>("ngayNghi")
                         .HasColumnType("datetime2");
@@ -417,7 +420,7 @@ namespace webapi.Migrations
                     b.ToTable("NgayNghis");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.NhomHocPhan", b =>
+            modelBuilder.Entity("webapi.Models.NhomHocPhan", b =>
                 {
                     b.Property<string>("MaNhomHP")
                         .HasMaxLength(15)
@@ -437,7 +440,7 @@ namespace webapi.Migrations
                     b.ToTable("NhomHocPhans");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.OCung", b =>
+            modelBuilder.Entity("webapi.Models.OCung", b =>
                 {
                     b.Property<int>("DungLuong")
                         .HasColumnType("int");
@@ -447,7 +450,7 @@ namespace webapi.Migrations
                     b.ToTable("OCungs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.PhanMem", b =>
+            modelBuilder.Entity("webapi.Models.PhanMem", b =>
                 {
                     b.Property<int>("IdPhanMem")
                         .ValueGeneratedOnAdd()
@@ -465,7 +468,7 @@ namespace webapi.Migrations
                     b.ToTable("PhanMems");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Phong", b =>
+            modelBuilder.Entity("webapi.Models.Phong", b =>
                 {
                     b.Property<int>("SoPhong")
                         .HasColumnType("int");
@@ -483,7 +486,7 @@ namespace webapi.Migrations
                     b.ToTable("Phongs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.RAM", b =>
+            modelBuilder.Entity("webapi.Models.RAM", b =>
                 {
                     b.Property<int>("DungLuong")
                         .HasColumnType("int");
@@ -493,7 +496,7 @@ namespace webapi.Migrations
                     b.ToTable("RAMs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Role", b =>
+            modelBuilder.Entity("webapi.Models.Roles", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -523,7 +526,7 @@ namespace webapi.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Tuan", b =>
+            modelBuilder.Entity("webapi.Models.Tuan", b =>
                 {
                     b.Property<int>("SoTuan")
                         .HasColumnType("int");
@@ -535,7 +538,7 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.Role", null)
+                    b.HasOne("webapi.Models.Roles", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -544,7 +547,7 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                    b.HasOne("webapi.Models.GiangVien", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -553,7 +556,7 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                    b.HasOne("webapi.Models.GiangVien", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -562,13 +565,13 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.Role", null)
+                    b.HasOne("webapi.Models.Roles", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                    b.HasOne("webapi.Models.GiangVien", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -577,22 +580,22 @@ namespace webapi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.GiangVien", null)
+                    b.HasOne("webapi.Models.GiangVien", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.CaiDatPhanMem", b =>
+            modelBuilder.Entity("webapi.Models.CaiDatPhanMem", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.PhanMem", "PhanMem")
+                    b.HasOne("webapi.Models.PhanMem", "PhanMem")
                         .WithMany("CaiDatPhanMems")
                         .HasForeignKey("IdPhanMem")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.Phong", "Phong")
+                    b.HasOne("webapi.Models.Phong", "Phong")
                         .WithMany("CaiDatPhanMems")
                         .HasForeignKey("SoPhong")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -603,17 +606,17 @@ namespace webapi.Migrations
                     b.Navigation("Phong");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.CauHinh", b =>
+            modelBuilder.Entity("webapi.Models.CauHinh", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.CPU", "CPU")
+                    b.HasOne("webapi.Models.CPU", "CPU")
                         .WithMany("CauHinhs")
                         .HasForeignKey("CPUTen");
 
-                    b.HasOne("MyWebAPI.Models.OCung", "OCung")
+                    b.HasOne("webapi.Models.OCung", "OCung")
                         .WithMany("CauHinhs")
                         .HasForeignKey("OCungDungLuong");
 
-                    b.HasOne("MyWebAPI.Models.RAM", "RAM")
+                    b.HasOne("webapi.Models.RAM", "RAM")
                         .WithMany("CauHinhs")
                         .HasForeignKey("RAMDungLuong");
 
@@ -624,27 +627,27 @@ namespace webapi.Migrations
                     b.Navigation("RAM");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.GiangDay", b =>
+            modelBuilder.Entity("webapi.Models.GiangDay", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.BuoiThucHanh", "BuoiThucHanh")
+                    b.HasOne("webapi.Models.BuoiThucHanh", "BuoiThucHanh")
                         .WithMany("GiangDays")
                         .HasForeignKey("BuoiThucHanhSTT")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.GiangVien", "GiangVien")
+                    b.HasOne("webapi.Models.GiangVien", "GiangVien")
                         .WithMany("GiangDays")
                         .HasForeignKey("GiangVienId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.HocKyNamHoc", "HocKyNamHoc")
+                    b.HasOne("webapi.Models.HocKyNamHoc", "HocKyNamHoc")
                         .WithMany("GiangDays")
                         .HasForeignKey("HK_NH")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.NhomHocPhan", "NhomHocPhan")
+                    b.HasOne("webapi.Models.NhomHocPhan", "NhomHocPhan")
                         .WithMany("GiangDays")
                         .HasForeignKey("MaNhomHP")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -659,15 +662,15 @@ namespace webapi.Migrations
                     b.Navigation("NhomHocPhan");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.HocPhanPhuHop", b =>
+            modelBuilder.Entity("webapi.Models.HocPhanPhuHop", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.HocPhan", "HocPhan")
+                    b.HasOne("webapi.Models.HocPhan", "HocPhan")
                         .WithMany("HocPhanPhuHops")
                         .HasForeignKey("MaHP")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.Phong", "Phong")
+                    b.HasOne("webapi.Models.Phong", "Phong")
                         .WithMany("HocPhanPhuHops")
                         .HasForeignKey("SoPhong")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -678,27 +681,27 @@ namespace webapi.Migrations
                     b.Navigation("Phong");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.LichThucHanh", b =>
+            modelBuilder.Entity("webapi.Models.LichThucHanh", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.Phong", "Phong")
+                    b.HasOne("webapi.Models.Phong", "Phong")
                         .WithMany("LichThucHanhs")
                         .HasForeignKey("PhongSoPhong")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.Buoi", "Buoi")
+                    b.HasOne("webapi.Models.Buoi", "Buoi")
                         .WithMany("LichThucHanhs")
                         .HasForeignKey("TenBuoi")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.Tuan", "Tuan")
+                    b.HasOne("webapi.Models.Tuan", "Tuan")
                         .WithMany("LichThucHanhs")
                         .HasForeignKey("TuanSoTuan")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MyWebAPI.Models.GiangDay", "GiangDay")
+                    b.HasOne("webapi.Models.GiangDay", "GiangDay")
                         .WithMany("LichThucHanhs")
                         .HasForeignKey("HK_NH", "GiangVienId", "BuoiThucHanhSTT", "MaNhomHP")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -713,9 +716,9 @@ namespace webapi.Migrations
                     b.Navigation("Tuan");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.NhomHocPhan", b =>
+            modelBuilder.Entity("webapi.Models.NhomHocPhan", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.HocPhan", "HocPhan")
+                    b.HasOne("webapi.Models.HocPhan", "HocPhan")
                         .WithMany("NhomHocPhans")
                         .HasForeignKey("HocPhanMaHP")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -724,73 +727,73 @@ namespace webapi.Migrations
                     b.Navigation("HocPhan");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Phong", b =>
+            modelBuilder.Entity("webapi.Models.Phong", b =>
                 {
-                    b.HasOne("MyWebAPI.Models.CauHinh", "CauHinh")
+                    b.HasOne("webapi.Models.CauHinh", "CauHinh")
                         .WithMany("Phongs")
                         .HasForeignKey("CauHinhIdCauHinh");
 
                     b.Navigation("CauHinh");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Buoi", b =>
+            modelBuilder.Entity("webapi.Models.Buoi", b =>
                 {
                     b.Navigation("LichThucHanhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.BuoiThucHanh", b =>
+            modelBuilder.Entity("webapi.Models.BuoiThucHanh", b =>
                 {
                     b.Navigation("GiangDays");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.CPU", b =>
+            modelBuilder.Entity("webapi.Models.CPU", b =>
                 {
                     b.Navigation("CauHinhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.CauHinh", b =>
+            modelBuilder.Entity("webapi.Models.CauHinh", b =>
                 {
                     b.Navigation("Phongs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.GiangDay", b =>
+            modelBuilder.Entity("webapi.Models.GiangDay", b =>
                 {
                     b.Navigation("LichThucHanhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.GiangVien", b =>
+            modelBuilder.Entity("webapi.Models.GiangVien", b =>
                 {
                     b.Navigation("GiangDays");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.HocKyNamHoc", b =>
+            modelBuilder.Entity("webapi.Models.HocKyNamHoc", b =>
                 {
                     b.Navigation("GiangDays");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.HocPhan", b =>
+            modelBuilder.Entity("webapi.Models.HocPhan", b =>
                 {
                     b.Navigation("HocPhanPhuHops");
 
                     b.Navigation("NhomHocPhans");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.NhomHocPhan", b =>
+            modelBuilder.Entity("webapi.Models.NhomHocPhan", b =>
                 {
                     b.Navigation("GiangDays");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.OCung", b =>
+            modelBuilder.Entity("webapi.Models.OCung", b =>
                 {
                     b.Navigation("CauHinhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.PhanMem", b =>
+            modelBuilder.Entity("webapi.Models.PhanMem", b =>
                 {
                     b.Navigation("CaiDatPhanMems");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Phong", b =>
+            modelBuilder.Entity("webapi.Models.Phong", b =>
                 {
                     b.Navigation("CaiDatPhanMems");
 
@@ -799,12 +802,12 @@ namespace webapi.Migrations
                     b.Navigation("LichThucHanhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.RAM", b =>
+            modelBuilder.Entity("webapi.Models.RAM", b =>
                 {
                     b.Navigation("CauHinhs");
                 });
 
-            modelBuilder.Entity("MyWebAPI.Models.Tuan", b =>
+            modelBuilder.Entity("webapi.Models.Tuan", b =>
                 {
                     b.Navigation("LichThucHanhs");
                 });

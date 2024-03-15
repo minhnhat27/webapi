@@ -1,13 +1,11 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using webapi.Data;
 using webapi.Models;
-using webapi.ViewModels;
 using webapi.ViewModels.Request;
 using webapi.ViewModels.Response;
 
@@ -20,7 +18,9 @@ namespace webapi.Services
         private readonly MyDbContext _dbContext;
         private readonly IConfiguration _config;
         private readonly ISendMailService _mailService;
-        public AccountService(SignInManager<GiangVien> signinManager, UserManager<GiangVien> userManager, MyDbContext dbContext, IConfiguration config, ISendMailService mailService)
+
+        public AccountService(SignInManager<GiangVien> signinManager, UserManager<GiangVien> userManager, 
+            MyDbContext dbContext, IConfiguration config, ISendMailService mailService)
         {
             _signinManager = signinManager;
             _dbContext = dbContext;
@@ -28,76 +28,73 @@ namespace webapi.Services
             _userManager = userManager;
             _mailService = mailService;
         }
-        private string GetEmailById(string id)
-        {
-            var result = _dbContext.Users.SingleOrDefault(e => e.Id == id);
-            if (result == null)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                return result.Email!;
-            }
-        }
-        private string GetIdByEmail(string email)
-        {
-            var result = _dbContext.Users.SingleOrDefault(e => e.Email == email);
-            if (result == null)
-            {
-                return string.Empty;
-            }
-            else
-            {
-                return result.Id;
-            }
-        }
 
-        public async Task<JwtResponse> LoginAsync(LoginModel login)
+        public async Task<JwtResponse> LoginAsync(LoginRequest login)
         {
-            var result = await _signinManager.PasswordSignInAsync(login.username, login.password, false, false);
-            GiangVien? user;
+            var result = await _signinManager.PasswordSignInAsync(login.Username, login.Password, false, false);
+
+            GiangVien? user = new GiangVien();
             if (!result.Succeeded)
             {
-                var uid = GetIdByEmail(login.username);
-                var resultEmail = await _signinManager.PasswordSignInAsync(uid, login.password, false, false);
-                if (!resultEmail.Succeeded)
+                var userTemp = await _userManager.FindByEmailAsync(login.Username);
+                if (userTemp == null)
                 {
                     return new JwtResponse
                     {
-                        success = false
+                        Success = false
                     };
                 }
-                user = await _userManager.FindByIdAsync(uid);
+                var resultId = await _signinManager.PasswordSignInAsync(userTemp.UserName!, login.Password, false, false);
+                if (!resultId.Succeeded)
+                {
+                    return new JwtResponse
+                    {
+                        Success = false
+                    };
+                }
+                user = userTemp;
             }
             else
             {
-                user = await _userManager.FindByIdAsync(login.username);
+                user = await _userManager.FindByIdAsync(login.Username);
+            }
+            if(user == null)
+            {
+                return new JwtResponse
+                {
+                    Success = false
+                };
             }
 
+            var userRole = await _userManager.GetRolesAsync(user);
             var auth = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user!.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id!),
                 new Claim(ClaimTypes.Name, user.HoTen!),
                 new Claim(ClaimTypes.Email, user.Email!),
-                new Claim(ClaimTypes.MobilePhone, user.SoDienThoai!),
-                new Claim(ClaimTypes.Role, "User")
+                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber!)
             };
+            foreach (var role in userRole)
+            {
+                auth.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var authenKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SerectKey"]!));
             var token = new JwtSecurityToken(
                 issuer: _config["JWT:ValidIssuer"],
                 audience: _config["JWT:ValidAudience"],
-                expires: DateTime.UtcNow.AddDays(1),
+                expires: DateTime.UtcNow.AddHours(1),
                 claims: auth,
                 signingCredentials: new SigningCredentials(authenKey, SecurityAlgorithms.HmacSha256)
             );
 
             return new JwtResponse
             {
-                success = true,
-                userId = user.Id,
-                name = user.HoTen,
-                accessToken = new JwtSecurityTokenHandler().WriteToken(token)
+                Success = true,
+                UserId = user.UserName,
+                Name = user.HoTen,
+                Roles = userRole.ToList(),
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(token)
             };
         }
 
@@ -111,31 +108,55 @@ namespace webapi.Services
                 {
                     return new JwtResponse
                     {
-                        success = false
+                        Success = false
                     };
                 }
-                var claims = new List<Claim>
+                var provider = "GoogleProvider";
+
+                var existed = await _userManager.FindByLoginAsync(provider, payload.Subject);
+                if (existed == null)
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user!.Id),
+                    await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, payload.Subject, "Google"));
+                }
+                
+                var result = await _signinManager.ExternalLoginSignInAsync(provider, payload.Subject, false);
+                if(!result.Succeeded)
+                {
+                    return new JwtResponse
+                    {
+                        Success = false
+                    };
+                }
+
+
+                var userRole = await _userManager.GetRolesAsync(user);
+                var auth = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.UserName!),
                     new Claim(ClaimTypes.Name, user.HoTen!),
                     new Claim(ClaimTypes.Email, user.Email!),
-                    new Claim(ClaimTypes.MobilePhone, user.SoDienThoai!),
-                    new Claim(ClaimTypes.Role, "User")
+                    new Claim(ClaimTypes.MobilePhone, user.PhoneNumber!)
                 };
+                foreach (var role in userRole)
+                {
+                    auth.Add(new Claim(ClaimTypes.Role, role));
+                }
+
                 var authenKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SerectKey"]!));
                 var token = new JwtSecurityToken(
                     issuer: _config["JWT:ValidIssuer"],
                     audience: _config["JWT:ValidAudience"],
-                    expires: DateTime.UtcNow.AddDays(1),
-                    claims: claims,
+                    expires: DateTime.UtcNow.AddHours(1),
+                    claims: auth,
                     signingCredentials: new SigningCredentials(authenKey, SecurityAlgorithms.HmacSha256)
                 );
                 return new JwtResponse
                 {
-                    success = true,
-                    userId = user.Id,
-                    name = user.HoTen,
-                    accessToken = new JwtSecurityTokenHandler().WriteToken(token)
+                    Success = true,
+                    UserId = user.UserName,
+                    Name = user.HoTen,
+                    Roles = userRole.ToList(),
+                    AccessToken = new JwtSecurityTokenHandler().WriteToken(token)
                 };
 
             }
@@ -143,130 +164,137 @@ namespace webapi.Services
             {
                 return new JwtResponse
                 {
-                    success = false
+                    Success = false
                 };
             }
         }
-        public async Task<ApiResponse> sendToken(string id)
+        public async Task<ApiResponse> sendToken(string email)
         {
-            var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Id == id || e.Email == id);
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "User doesn't exist"
+                    Success = false,
+                    Message = "User doesn't exist"
                 };
             }
 
-            var email = GetEmailById(id);
-            if (!string.IsNullOrEmpty(email))
-            {
-                id = email;
-            }
-            _mailService.setToken();
-            var token = _mailService.getToken().ToString();
-            var sub = "Yêu cầu khôi phục mật khẩu";
-            await _mailService.SendEmailAsync(id, sub, token);
+            Random rd = new Random();
+            var token = rd.Next(100011, 999988);
+            user.ResetCode = token;
+            user.ResetCodeExpiresAt = DateTime.UtcNow.AddMinutes(30);
+            await _dbContext.SaveChangesAsync();
 
+            var sub = "Yêu cầu khôi phục mật khẩu";
+            var body = "<table>" +
+                        "<tr><td>Bạn nhận được email này vì chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</td></tr>" +
+                        $"<tr><td><h2>{token}</h2></td></tr>" +
+                        "<tr><td>Mã xác minh sẽ hết hạn sau 30 phút.</td></tr>" +
+                        "<tr><td>Nếu bạn không yêu cầu mã, bạn có thể bỏ qua tin nhắn này.</td></tr>" +
+                        "<tr><td style='padding-top:1rem'><i>Đây là email được tạo tự động. Vui lòng không trả lời thư này.</i></td></tr>" +
+                       "</table>";
+
+            await _mailService.SendEmailAsync(email, sub, body);
             return new ApiResponse
             {
-                success = true,
-                message = "Success",
-                data = token
+                Success = true
             };
         }
 
-        public async Task<ApiResponse> checkToken(ForgetPasswordModel forgetPassword)
+        public async Task<ApiResponse> checkToken(CheckTokenRequest checkTokenRequest)
         {
-            var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Id == forgetPassword.id || e.Email == forgetPassword.id);
+            var user = await _userManager.FindByEmailAsync(checkTokenRequest.Email);
             if (user == null)
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "Fail"
+                    Success = false,
+                    Message = "User doesn't exist"
                 };
             }
-            if (forgetPassword.token == null)
+            if (checkTokenRequest.Token == null)
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "Fail"
+                    Success = false
                 };
             }
-            var result = forgetPassword.token.Equals(_mailService.getToken().ToString());
+            var result = checkTokenRequest.Email.Equals(user.Email) &&
+                            checkTokenRequest.Token.Equals(user.ResetCode.ToString()) &&
+                                user.ResetCodeExpiresAt > DateTime.UtcNow;
             if (result)
             {
                 return new ApiResponse
                 {
-                    success = true,
-                    message = "Success"
+                    Success = true,
                 };
             }
             else
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "Fail"
+                    Success = false
                 };
             }
         }
-        public async Task<ApiResponse> changePassword(ForgetPasswordModel forgetPassword)
+
+        public async Task<ApiResponse> changePassword(CheckTokenRequest checkTokenRequest)
         {
-            var user = await _dbContext.Users.SingleOrDefaultAsync(e => e.Id == forgetPassword.id || e.Email == forgetPassword.id);
-            if (forgetPassword.token == null || forgetPassword.newPassword == null)
+            
+            if (checkTokenRequest.NewPassword == null)
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "Fail"
+                    Success = false
                 };
             }
-            if (!forgetPassword.token.Equals(_mailService.getToken().ToString()))
-            {
-                return new ApiResponse
-                {
-                    success = false,
-                    message = "Fail"
-                };
-            }
+            
+            var user = await _userManager.FindByEmailAsync(checkTokenRequest.Email);
             if (user == null)
             {
                 return new ApiResponse
                 {
-                    success = false,
-                    message = "Fail"
+                    Success = false
+                };
+            }
+            var result = checkTokenRequest.Email.Equals(user.Email) &&
+                            checkTokenRequest.Token.Equals(user.ResetCode.ToString());
+            if (!result)
+            {
+                return new ApiResponse
+                {
+                    Success = false,
+                };
+            }
+
+            user.ResetCode = null;
+            user.ResetCodeExpiresAt = null;
+            //var token = _mailService.getToken().ToString();
+            //await _userManager.RemovePasswordAsync(user);
+            //await _userManager.AddPasswordAsync(user, token);
+            //await _userManager.ChangePasswordAsync(user, token, forgetPassword.newPassword);
+            string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resultReset = await _userManager.ResetPasswordAsync(user, token, checkTokenRequest.NewPassword);
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            await _dbContext.SaveChangesAsync();
+
+            if (resultReset.Succeeded)
+            {
+                return new ApiResponse
+                {
+                    Success = true,
+                    Message = "Success"
                 };
             }
             else
             {
-                //var token = _mailService.getToken().ToString();
-                //await _userManager.RemovePasswordAsync(user);
-                //await _userManager.AddPasswordAsync(user, token);
-                //await _userManager.ChangePasswordAsync(user, token, forgetPassword.newPassword);
-
-                string token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await _userManager.ResetPasswordAsync(user, token, forgetPassword.newPassword);
-
-                if (result.Succeeded)
+                return new ApiResponse
                 {
-                    return new ApiResponse
-                    {
-                        success = true,
-                        message = "Success"
-                    };
-                }
-                else
-                {
-                    return new ApiResponse
-                    {
-                        success = false,
-                        message = "Fail"
-                    };
-                }
+                    Success = false,
+                    Message = "Fail"
+                };
             }
         }
     }

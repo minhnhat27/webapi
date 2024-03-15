@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using webapi.Services;
-using webapi.ViewModels;
 using webapi.ViewModels.Request;
+using webapi.ViewModels.Response;
 
 namespace webapi.Controllers
 {
@@ -20,10 +19,10 @@ namespace webapi.Controllers
         [AllowAnonymous, HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        public async Task<IActionResult> Login([FromBody]LoginRequest model)
         {
             var result = await _accountService.LoginAsync(model);
-            if (result.success)
+            if (result.Success)
             {
                 return Ok(result);
             }
@@ -35,14 +34,29 @@ namespace webapi.Controllers
 
         [AllowAnonymous, HttpPost("externalLogin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ExternalLogin([FromBody] LoginGoogleRequest googleRequest)
+        [ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
+        public async Task<IActionResult> ExternalLogin([FromBody]LoginGoogleRequest googleRequest)
         {
             var result = await _accountService.ExternalLogin(googleRequest);
-            if (result.success)
+            if (result.Success)
             {
                 return Ok(result);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status203NonAuthoritative);
+            }
+        }
+
+        [AllowAnonymous, HttpPost("sendToken")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> SendToken([FromBody] SendCodeRequest sendCode)
+        {
+            var result = await _accountService.sendToken(sendCode.email);
+            if (result.Success)
+            {
+                return Ok();
             }
             else
             {
@@ -50,51 +64,35 @@ namespace webapi.Controllers
             }
         }
 
-        [AllowAnonymous, HttpPost("sendToken")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> SendToken([FromBody] string id)
-        {
-            var result = await _accountService.sendToken(id);
-            if (!result.success)
-            {
-                return NotFound(result);
-            }
-            else
-            {
-                return Ok(result);
-            }
-        }
-
         [AllowAnonymous, HttpPost("checkToken")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CheckToken([FromBody] ForgetPasswordModel forgetPassword)
+        public async Task<IActionResult> CheckToken([FromBody] CheckTokenRequest checkTokenRequest)
         {
-            var result = await _accountService.checkToken(forgetPassword);
-            if (!result.success)
-            {
-                return NotFound(result);
+            var result = await _accountService.checkToken(checkTokenRequest);
+            if (result.Success)
+            { 
+                return Ok();
             }
             else
             {
-                return Ok(result);
+                return NotFound();
             }
         }
 
         [AllowAnonymous, HttpPost("changePassword")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ChangePassword([FromBody] ForgetPasswordModel forgetPassword)
+        public async Task<IActionResult> ChangePassword([FromBody]CheckTokenRequest forgetPassword)
         {
             var result = await _accountService.changePassword(forgetPassword);
-            if (!result.success)
+            if (result.Success)
             {
-                return BadRequest(result);
+                return Ok();
             }
             else
             {
-                return Ok(result);
+                return BadRequest();
             }
         }
     }

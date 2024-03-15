@@ -19,45 +19,45 @@ namespace webapi.Controllers
             _scheduleService = scheduleService;
         }
 
-        [Authorize, HttpGet("getTeachingofLecturer")]
+        [Authorize(Roles = "User"), HttpGet("getTeachingofLecturer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetTeachingofLecturer()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId != null)
+            var UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (UserId != null)
             {
-                var list = await _scheduleService.getAllCourseGroupofLecturer(userId!);
+                var list = await _scheduleService.getAllCourseGroupofLecturer(UserId!);
                 return Ok(list);
             }
             else return Unauthorized();
         }
 
-        [Authorize, HttpPost("saveSchedule")]
+        [Authorize(Roles = "User"), HttpPost("saveSchedule")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> SaveSchedule([FromBody] LichThucHanhVM lichThucHanh)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var result = await _scheduleService.saveSchedule(userId, lichThucHanh);
-            if (result.success)
+            var UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var result = await _scheduleService.saveSchedule(UserId, lichThucHanh);
+            if (result.Success)
             {
-                return Ok(result.message);
+                return Ok(result.Message);
             }
             else
             {
-                return BadRequest(result.message);
+                return BadRequest(result.Message);
             }
         }
 
-        [Authorize, HttpPut("updateOnSchedule")]
+        [Authorize(Roles = "User"), HttpPut("updateOnSchedule")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateOnSchedule([FromBody] OnScheduleRequest lichThucHanh)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var result = await _scheduleService.updateOnSchedule(userId, lichThucHanh);
-            if (result.success)
+            var UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var result = await _scheduleService.updateOnSchedule(UserId, lichThucHanh);
+            if (result.Success)
             {
                 return Ok();
             }
@@ -76,7 +76,7 @@ namespace webapi.Controllers
         }
 
         [AllowAnonymous, HttpGet("download")]
-        public async Task<IActionResult> downloadExcel()
+        public async Task<IActionResult> DownloadExcel()
         {
             var list = await _scheduleService.getSchedule();
             var stream = new MemoryStream();

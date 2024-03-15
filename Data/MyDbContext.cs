@@ -4,7 +4,7 @@ using webapi.Models;
 
 namespace webapi.Data
 {
-    public class MyDbContext : IdentityDbContext<GiangVien, Role, string>
+    public class MyDbContext : IdentityDbContext<GiangVien, Roles, string>
     {
         public MyDbContext(DbContextOptions<MyDbContext> options) : base(options) { }
 

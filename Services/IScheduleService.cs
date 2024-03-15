@@ -8,8 +8,9 @@ namespace webapi.Services
     {
         Task<LichGiangDayVM> getAllCourseGroupofLecturer(string MSCB);
         Task<ApiResponse> saveSchedule(string mscb, LichThucHanhVM lichThucHanh);
-        Task<ApiResponse> updateOnSchedule(string mscb, OnScheduleRequest lichThucHanh);
+        Task<ApiResponse> saveScheduleToPreSemester(string mscb, LichThucHanhVM lichThucHanh);
+		Task<ApiResponse> updateOnSchedule(string mscb, OnScheduleRequest lichThucHanh);
         Task<ScheduleResponse> getSchedule(int w);
         Task<ScheduleResponse> getSchedule();
-    }
+	}
 }

@@ -6,6 +6,7 @@ using System.Text;
 using webapi.Data;
 using webapi.Models;
 using webapi.Services;
+using webapi.Services.Admin;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,17 +25,23 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyWebAPI", opt =>
     {
-        //opt.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
-        opt.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
-    });
+        opt.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+		//opt.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+	});
 });
 
-builder.Services.AddIdentity<GiangVien, Role>().AddEntityFrameworkStores<MyDbContext>().AddDefaultTokenProviders();
+builder.Services.AddIdentity<GiangVien, Roles>().AddEntityFrameworkStores<MyDbContext>().AddDefaultTokenProviders();
+
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
+builder.Services.AddScoped<ITeachingService, TeachingService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
 
-builder.Services.AddSingleton<ISendMailService, SendMailService>();
+builder.Services.AddTransient<ISendMailService, SendMailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISemesterService, SemesterService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -66,6 +73,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 0;
     options.Password.RequireUppercase = false;
+
+    options.User.RequireUniqueEmail = true;
+    options.Lockout.AllowedForNewUsers = false;
 });
 
 var app = builder.Build();
